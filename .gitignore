@@ -1,0 +1,10 @@
+node_modules
+dist
+.DS_Store
+*.local
+
+# Raw source photos (originals/HEIC/unused shots) — optimized copies live in src/assets/team
+/team
+
+# Original Figma Make scaffold, kept locally as a design reference only
+/figma
