@@ -1,0 +1,114 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300;1,9..40,400&family=JetBrains+Mono:wght@300;400;500;600&family=Instrument+Serif:ital@0;1&display=swap');
+
+@font-face {
+  font-family: 'Newake';
+  src: url('/fonts/NewakeFont-Demo.otf') format('opentype');
+  font-weight: 400 700;
+  font-display: swap;
+}
+
+@import 'tailwindcss';
+
+@theme inline {
+  --color-background: #1d1d1b;
+  --color-foreground: #f4f2ec;
+  --color-card: #262624;
+  --color-card-foreground: #ece9e1;
+  --color-primary: #82c9c1;
+  --color-primary-foreground: #1d1d1b;
+  --color-secondary: #a4a7d4;
+  --color-secondary-foreground: #1d1d1b;
+  --color-muted: #2f2f2c;
+  --color-muted-foreground: #8a887f;
+  --color-accent: #e2eaf6;
+  --color-accent-foreground: #1d1d1b;
+  --color-border: rgba(244,242,236,0.08);
+  --color-teal: #82c9c1;
+  --color-purple: #a4a7d4;
+  --color-lavender: #e2eaf6;
+  --color-ink: #1d1d1b;
+
+  --font-sans: 'DM Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-display: 'Newake', 'DM Sans', sans-serif;
+  --font-serif: 'Instrument Serif', serif;
+}
+
+html, body, #root {
+  height: 100%;
+  background: #1d1d1b;
+  color: #f4f2ec;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(130, 201, 193, 0.25) transparent;
+}
+
+*::-webkit-scrollbar { width: 4px; height: 4px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb { background: rgba(130, 201, 193, 0.25); border-radius: 2px; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.font-display {
+  font-family: 'Newake', 'DM Sans', sans-serif;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.7s ease forwards;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease forwards;
+}
+
+.dot-grid {
+  background-image: radial-gradient(circle, rgba(164, 167, 212, 0.14) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.line-grid {
+  background-image:
+    linear-gradient(rgba(130, 201, 193, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(130, 201, 193, 0.05) 1px, transparent 1px);
+  background-size: 64px 64px;
+}
+
+.text-gradient-brand {
+  background: linear-gradient(135deg, #82c9c1 0%, #a4a7d4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.nav-blur {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+
+input, textarea {
+  outline: none;
+}
+
+input:focus, textarea:focus {
+  box-shadow: 0 0 0 1px rgba(130, 201, 193, 0.4);
+}
