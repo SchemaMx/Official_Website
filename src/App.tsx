@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom'
 import { LanguageProvider, useLanguage } from '@/i18n/LanguageContext'
 import { Nav } from '@/components/Nav'
 import { Footer } from '@/components/Footer'
@@ -6,9 +7,8 @@ import { Home } from '@/pages/Home'
 import { Scope } from '@/pages/Scope'
 import { Team } from '@/pages/Team'
 import { Projects } from '@/pages/Projects'
+import { ProjectDetail } from '@/pages/ProjectDetail'
 import { Contact } from '@/pages/Contact'
-
-export type Page = 'home' | 'scope' | 'team' | 'projects' | 'contact'
 
 function DocumentMeta() {
   const { t } = useLanguage()
@@ -27,27 +27,34 @@ function DocumentMeta() {
   return null
 }
 
-function AppShell() {
-  const [page, setPage] = useState<Page>('home')
-
+function ScrollToTop() {
+  const { pathname } = useLocation()
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
-  }, [page])
+  }, [pathname])
+  return null
+}
 
+function AppShell() {
   return (
     <div className="min-h-screen bg-ink text-white font-sans">
       <DocumentMeta />
-      <Nav page={page} setPage={setPage} />
+      <ScrollToTop />
+      <Nav />
 
       <main>
-        {page === 'home' && <Home setPage={setPage} />}
-        {page === 'scope' && <Scope />}
-        {page === 'team' && <Team />}
-        {page === 'projects' && <Projects />}
-        {page === 'contact' && <Contact />}
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/scope" element={<Scope />} />
+          <Route path="/team" element={<Team />} />
+          <Route path="/projects" element={<Projects />} />
+          <Route path="/projects/:slug" element={<ProjectDetail />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </main>
 
-      <Footer setPage={setPage} />
+      <Footer />
     </div>
   )
 }
@@ -55,7 +62,9 @@ function AppShell() {
 export default function App() {
   return (
     <LanguageProvider>
-      <AppShell />
+      <BrowserRouter>
+        <AppShell />
+      </BrowserRouter>
     </LanguageProvider>
   )
 }

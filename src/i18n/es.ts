@@ -239,37 +239,60 @@ export const es = {
     title1: 'Casos de',
     title2: 'estudio.',
     intro:
-      'Todavía no publicamos casos de estudio reales — los de abajo son ejemplos ilustrativos para mostrar cómo se verá esta sección una vez que tengamos proyectos propios que documentar.',
-    sampleBadge: 'Ejemplo ilustrativo',
-    filterAll: 'Todos',
-    filters: ['Infraestructura de Datos', 'Investigación de Mercado', 'Analítica & Consultoría'],
-    samples: [
+      'Estamos construyendo nuestros propios productos además de trabajar con clientes. Aquí documentamos ese proceso en tiempo real — con el estado de avance real de cada uno.',
+    flagship: [
       {
-        category: 'Infraestructura de Datos',
-        title: 'Dashboard operativo en tiempo real',
-        client: 'Distribuidora regional (ejemplo)',
-        outcome:
-          'De reportes en Excel armados a mano cada semana, a un dashboard en vivo que el equipo de operaciones consulta a diario.',
-        tags: ['Streamlit', 'MySQL', 'Dashboards'],
+        slug: 'ultra-manejo-clinica',
+        name: 'Ultra Manejo de Clínica',
+        nameNote: 'Nombre de trabajo',
+        tagline: 'Gestión de pacientes para clínicas de bariatría y metabolismo.',
+        statusLabel: 'En desarrollo',
+        statusDetail: 'Backend funcional. Landing page y subdominio propio todavía pendientes.',
+        problem:
+          'Las clínicas de bariatría y metabolismo dan seguimiento a sus pacientes a través de estudios de laboratorio recurrentes y básculas de composición corporal (InBody), pero el personal suele transcribir esos valores a mano desde PDFs y tickets impresos — lento, propenso a errores, y difícil de convertir en una vista clara del progreso del paciente en el tiempo.',
+        solution:
+          'Ultra Manejo de Clínica lee automáticamente los reportes de laboratorio en PDF (varios formatos de laboratorios de Monterrey) y los tickets de báscula InBody, y arma el expediente del paciente sin captura manual. La comunicación con el paciente ocurre directo por WhatsApp en lugar de llamadas y recordatorios manuales.',
+        scope: [
+          'Expedientes de pacientes',
+          'Lectura automática de estudios de laboratorio (PDF)',
+          'Lectura de básculas de composición corporal InBody',
+          'Comunicación con pacientes por WhatsApp',
+          'Base de datos en la nube (Supabase)',
+        ],
+        tags: ['Python', 'Flask', 'Supabase', 'WhatsApp API'],
       },
       {
-        category: 'Investigación de Mercado',
-        title: 'Segmentación de clientes vía encuesta conjoint',
-        client: 'Retailer de consumo (ejemplo)',
-        outcome:
-          'Identificación de 4 segmentos de clientes que permitió priorizar el rediseño de dos líneas de producto.',
-        tags: ['Qualtrics', 'Conjoint', 'Segmentación'],
-      },
-      {
-        category: 'Analítica & Consultoría',
-        title: 'Modelo de pronóstico de demanda',
-        client: 'Manufactura ligera (ejemplo)',
-        outcome: 'Reducción de quiebres de inventario al anticipar la demanda mensual por SKU.',
-        tags: ['Pronósticos', 'Python', 'Optimización'],
+        slug: 'pricing-consultoras',
+        name: 'Herramienta de Pricing para Consultoras',
+        nameNote: 'Descripción de trabajo — nombre por definir',
+        tagline: 'Análisis de horas facturables para ayudar a despachos a fijar sus tarifas.',
+        statusLabel: 'En concepto',
+        statusDetail: 'Aún no iniciamos el desarrollo — estamos definiendo el alcance.',
+        problem:
+          'Las consultoras y despachos contables que cobran por hora suelen fijar sus tarifas por intuición o por lo que cobra la competencia, no por lo que realmente indican sus propios datos de horas trabajadas — dejando dinero sobre la mesa o cotizándose fuera del mercado.',
+        solution:
+          'El despacho comparte sus registros de tiempo (de la herramienta que ya usan) y nosotros construimos un reporte de pricing hecho a la medida: un punto de partida basado en datos reales sobre lo que sus servicios deberían costar, más un análisis adaptado a sus preferencias de negocio.',
+        scope: [
+          'Carga de registros de tiempo',
+          'Análisis de rentabilidad por servicio o cliente',
+          'Recomendación de tarifas basada en datos',
+          'Reporte personalizado por despacho',
+        ],
+        tags: ['Análisis de Datos', 'Pricing', 'Reportes', 'Consultoría'],
       },
     ],
     ctaTitle: '¿Tienes un proyecto en mente?',
-    ctaBody: 'Podría ser el primer caso de estudio real que publiquemos juntos.',
+    ctaBody: 'Podría ser el primer caso de estudio de cliente que publiquemos junto al tuyo.',
+    detail: {
+      backToProjects: '← Volver a Proyectos',
+      problemTitle: 'El problema',
+      solutionTitle: 'La solución',
+      scopeTitle: 'Alcance',
+      subdomainNote: 'Sitio propio — próximamente en su propio subdominio dentro de schema.mx',
+      ctaTitle: '¿Algo similar en mente?',
+      notFoundTitle: 'Proyecto no encontrado',
+      notFoundBody: 'No encontramos ese proyecto. Puede que el enlace esté mal o que ya no exista.',
+    },
   },
   contact: {
     eyebrow: '04 / Contacto',
@@ -298,6 +321,8 @@ export const es = {
     formSuccessTitle: '¡Mensaje enviado!',
     formSuccessBody: 'Gracias por escribirnos. Te contestaremos a tu correo dentro de 1 día hábil.',
     formErrorBody: 'Algo salió mal al enviar tu mensaje. Escríbenos directamente a',
+    openNewTab: 'Abrir en pestaña nueva',
+    embedFailed: 'El calendario no cargó. Ábrelo directamente en Calendly:',
   },
   footer: {
     rights: 'Todos los derechos reservados.',

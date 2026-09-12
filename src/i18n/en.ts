@@ -237,36 +237,60 @@ export const en = {
     title1: 'Case',
     title2: 'studies.',
     intro:
-      'We haven’t published real case studies yet — the ones below are illustrative samples showing how this section will look once we have our own projects to document.',
-    sampleBadge: 'Illustrative sample',
-    filterAll: 'All',
-    filters: ['Data Infrastructure', 'Market Research', 'Analytics & Consulting'],
-    samples: [
+      'We’re building our own products alongside client work. This is where we document that process in real time — with each one’s actual current status.',
+    flagship: [
       {
-        category: 'Data Infrastructure',
-        title: 'Real-time operations dashboard',
-        client: 'Regional distributor (sample)',
-        outcome:
-          'From hand-built Excel reports every week to a live dashboard the operations team checks daily.',
-        tags: ['Streamlit', 'MySQL', 'Dashboards'],
+        slug: 'ultra-manejo-clinica',
+        name: 'Ultra Clinic Management',
+        nameNote: 'Working name',
+        tagline: 'Patient management for bariatric and metabolic clinics.',
+        statusLabel: 'In development',
+        statusDetail: 'Backend is functional. Landing page and its own subdomain are still pending.',
+        problem:
+          'Bariatric and metabolic clinics track patient progress through recurring lab work and body-composition scales (InBody), but staff usually retype those values by hand from PDFs and printed tickets — slow, error-prone, and hard to turn into a clear view of a patient’s progress over time.',
+        solution:
+          'Ultra Clinic Management automatically reads lab report PDFs (several formats from Monterrey labs) and InBody scale tickets, and builds the patient record without manual entry. Patient communication happens directly over WhatsApp instead of manual calls and reminders.',
+        scope: [
+          'Patient records',
+          'Automated lab report parsing (PDF)',
+          'InBody body-composition scale parsing',
+          'Patient communication via WhatsApp',
+          'Cloud database (Supabase)',
+        ],
+        tags: ['Python', 'Flask', 'Supabase', 'WhatsApp API'],
       },
       {
-        category: 'Market Research',
-        title: 'Customer segmentation via conjoint survey',
-        client: 'Consumer retailer (sample)',
-        outcome: 'Identified 4 customer segments, prioritizing a redesign of two product lines.',
-        tags: ['Qualtrics', 'Conjoint', 'Segmentation'],
-      },
-      {
-        category: 'Analytics & Consulting',
-        title: 'Demand forecasting model',
-        client: 'Light manufacturing (sample)',
-        outcome: 'Reduced inventory stockouts by anticipating monthly demand per SKU.',
-        tags: ['Forecasting', 'Python', 'Optimization'],
+        slug: 'pricing-consultoras',
+        name: 'Pricing Tool for Consulting Firms',
+        nameNote: 'Working description — name still pending',
+        tagline: 'Billable-hours analysis to help firms set their rates.',
+        statusLabel: 'Concept stage',
+        statusDetail: 'Development hasn’t started yet — we’re still defining the scope.',
+        problem:
+          'Consulting and accounting firms that bill hourly often set their rates based on gut feeling or what competitors charge, rather than what their own time-tracking data actually says — leaving money on the table or pricing themselves out of engagements.',
+        solution:
+          'The firm shares its time-entry data (from whatever tool they already use) and we build a tailored pricing report: a data-driven baseline for what their services should actually cost, plus analysis tailored to their business preferences.',
+        scope: [
+          'Time-entry data ingestion',
+          'Profitability analysis per service or client',
+          'Data-driven rate recommendations',
+          'Custom report per firm',
+        ],
+        tags: ['Data Analysis', 'Pricing', 'Reporting', 'Consulting'],
       },
     ],
     ctaTitle: 'Have a project in mind?',
-    ctaBody: 'It could be the first real case study we publish together.',
+    ctaBody: 'It could be the first client case study we publish alongside these.',
+    detail: {
+      backToProjects: '← Back to Projects',
+      problemTitle: 'The problem',
+      solutionTitle: 'The solution',
+      scopeTitle: 'Scope',
+      subdomainNote: 'Own site — coming soon on its own subdomain within schema.mx',
+      ctaTitle: 'Something similar in mind?',
+      notFoundTitle: 'Project not found',
+      notFoundBody: 'We couldn’t find that project. The link may be wrong or it may no longer exist.',
+    },
   },
   contact: {
     eyebrow: '04 / Contact',
@@ -295,6 +319,8 @@ export const en = {
     formSuccessTitle: 'Message sent!',
     formSuccessBody: 'Thanks for reaching out. We’ll reply to your email within 1 business day.',
     formErrorBody: 'Something went wrong sending your message. Email us directly at',
+    openNewTab: 'Open in new tab',
+    embedFailed: 'The calendar didn’t load. Open it directly on Calendly:',
   },
   footer: {
     rights: 'All rights reserved.',

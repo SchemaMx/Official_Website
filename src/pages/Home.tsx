@@ -1,10 +1,11 @@
+import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { NodeGraphCanvas } from '@/components/NodeGraphCanvas'
 import { CalendlyButton } from '@/components/CalendlyButton'
-import type { Page } from '@/App'
 
-export function Home({ setPage }: { setPage: (p: Page) => void }) {
+export function Home() {
   const { t } = useLanguage()
+  const navigate = useNavigate()
 
   return (
     <div className="min-h-screen">
@@ -46,7 +47,7 @@ export function Home({ setPage }: { setPage: (p: Page) => void }) {
                 <span className="group-hover:translate-x-1 transition-transform duration-200">→</span>
               </CalendlyButton>
               <button
-                onClick={() => setPage('scope')}
+                onClick={() => navigate('/scope')}
                 className="flex items-center gap-3 px-7 py-3.5 border border-white/15 text-white/60 font-mono text-[12px] tracking-[0.1em] uppercase hover:border-white/30 hover:text-white/80 transition-all duration-200"
               >
                 {t.hero.ctaSecondary}
@@ -89,7 +90,7 @@ export function Home({ setPage }: { setPage: (p: Page) => void }) {
             <span className="font-serif italic text-purple">{t.about.title2}</span>
           </h2>
           <button
-            onClick={() => setPage('scope')}
+            onClick={() => navigate('/scope')}
             className="font-mono text-[11px] tracking-[0.15em] text-teal uppercase hover:text-white transition-colors duration-200 flex items-center gap-2 group"
           >
             {t.about.cta} <span className="group-hover:translate-x-1 transition-transform">→</span>

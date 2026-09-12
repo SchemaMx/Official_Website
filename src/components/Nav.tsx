@@ -1,14 +1,21 @@
 import { useEffect, useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { LanguageToggle } from './LanguageToggle'
 import { CalendlyButton } from './CalendlyButton'
-import type { Page } from '@/App'
 import logoIcon from '@/assets/logo-icon.png'
 
-const PAGE_ORDER: Page[] = ['home', 'scope', 'team', 'projects', 'contact']
+const NAV_LINKS = [
+  { path: '/', key: 'home' as const },
+  { path: '/scope', key: 'scope' as const },
+  { path: '/team', key: 'team' as const },
+  { path: '/projects', key: 'projects' as const },
+  { path: '/contact', key: 'contact' as const },
+]
 
-export function Nav({ page, setPage }: { page: Page; setPage: (p: Page) => void }) {
+export function Nav() {
   const { t } = useLanguage()
+  const { pathname } = useLocation()
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -18,13 +25,11 @@ export function Nav({ page, setPage }: { page: Page; setPage: (p: Page) => void 
     return () => window.removeEventListener('scroll', handler)
   }, [])
 
-  const navLabel: Record<Page, string> = {
-    home: t.nav.home,
-    scope: t.nav.scope,
-    team: t.nav.team,
-    projects: t.nav.projects,
-    contact: t.nav.contact,
-  }
+  useEffect(() => {
+    setMenuOpen(false)
+  }, [pathname])
+
+  const isActive = (path: string) => (path === '/' ? pathname === '/' : pathname.startsWith(path))
 
   return (
     <header
@@ -33,25 +38,25 @@ export function Nav({ page, setPage }: { page: Page; setPage: (p: Page) => void 
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 md:px-10 h-16 flex items-center justify-between">
-        <button onClick={() => setPage('home')} className="flex items-center gap-2.5 shrink-0" aria-label="Schema — Home">
+        <Link to="/" className="flex items-center gap-2.5 shrink-0" aria-label="Schema — Home">
           <img src={logoIcon} alt="" className="h-9 md:h-10 w-auto" />
           <span className="font-display text-2xl md:text-[28px] tracking-wide text-foreground leading-none pt-0.5">
             SCHEMA
           </span>
-        </button>
+        </Link>
 
         <nav className="hidden md:flex items-center gap-1">
-          {PAGE_ORDER.map((id) => (
-            <button
-              key={id}
-              onClick={() => setPage(id)}
+          {NAV_LINKS.map(({ path, key }) => (
+            <Link
+              key={path}
+              to={path}
               className={`relative px-4 py-2 font-mono text-[11px] tracking-[0.1em] uppercase transition-colors duration-200 ${
-                page === id ? 'text-teal' : 'text-white/40 hover:text-white/80'
+                isActive(path) ? 'text-teal' : 'text-white/40 hover:text-white/80'
               }`}
             >
-              {page === id && <span className="absolute bottom-1 left-4 right-4 h-px bg-teal" />}
-              {navLabel[id]}
-            </button>
+              {isActive(path) && <span className="absolute bottom-1 left-4 right-4 h-px bg-teal" />}
+              {t.nav[key]}
+            </Link>
           ))}
           <LanguageToggle className="ml-4" />
           <CalendlyButton className="ml-2 px-5 py-2 border border-teal/40 text-teal font-mono text-[11px] tracking-[0.1em] uppercase hover:bg-teal/10 hover:border-teal/70 transition-all duration-200">
@@ -75,19 +80,16 @@ export function Nav({ page, setPage }: { page: Page; setPage: (p: Page) => void 
 
       {menuOpen && (
         <div className="md:hidden bg-ink/98 border-t border-white/8 py-4">
-          {PAGE_ORDER.map((id) => (
-            <button
-              key={id}
-              onClick={() => {
-                setPage(id)
-                setMenuOpen(false)
-              }}
+          {NAV_LINKS.map(({ path, key }) => (
+            <Link
+              key={path}
+              to={path}
               className={`block w-full text-left px-8 py-3 font-mono text-[12px] tracking-[0.1em] uppercase ${
-                page === id ? 'text-teal' : 'text-white/50'
+                isActive(path) ? 'text-teal' : 'text-white/50'
               }`}
             >
-              {navLabel[id]}
-            </button>
+              {t.nav[key]}
+            </Link>
           ))}
         </div>
       )}

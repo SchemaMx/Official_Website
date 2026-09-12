@@ -1,18 +1,16 @@
+import { Link } from 'react-router-dom'
 import { useLanguage } from '@/i18n/LanguageContext'
-import type { Page } from '@/App'
 
-const PAGE_ORDER: Page[] = ['home', 'scope', 'team', 'projects', 'contact']
+const NAV_LINKS = [
+  { path: '/', key: 'home' as const },
+  { path: '/scope', key: 'scope' as const },
+  { path: '/team', key: 'team' as const },
+  { path: '/projects', key: 'projects' as const },
+  { path: '/contact', key: 'contact' as const },
+]
 
-export function Footer({ setPage }: { setPage: (p: Page) => void }) {
+export function Footer() {
   const { t } = useLanguage()
-
-  const navLabel: Record<Page, string> = {
-    home: t.nav.home,
-    scope: t.nav.scope,
-    team: t.nav.team,
-    projects: t.nav.projects,
-    contact: t.nav.contact,
-  }
 
   return (
     <footer className="border-t border-white/7 bg-ink">
@@ -21,14 +19,14 @@ export function Footer({ setPage }: { setPage: (p: Page) => void }) {
           © {new Date().getFullYear()} Schema — {t.footer.rights}
         </div>
         <div className="flex gap-6 flex-wrap">
-          {PAGE_ORDER.map((id) => (
-            <button
-              key={id}
-              onClick={() => setPage(id)}
+          {NAV_LINKS.map(({ path, key }) => (
+            <Link
+              key={path}
+              to={path}
               className="font-mono text-[10px] tracking-[0.12em] uppercase text-white/25 hover:text-white/60 transition-colors duration-200"
             >
-              {navLabel[id]}
-            </button>
+              {t.nav[key]}
+            </Link>
           ))}
         </div>
       </div>
