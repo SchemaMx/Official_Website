@@ -242,8 +242,8 @@ export const es = {
       'Estamos construyendo nuestros propios productos además de trabajar con clientes. Aquí documentamos ese proceso en tiempo real — con el estado de avance real de cada uno.',
     flagship: [
       {
-        slug: 'ultra-manejo-clinica',
-        name: 'Ultra Manejo de Clínica',
+        slug: 'clinic-plus',
+        name: 'Clinic Plus',
         nameNote: 'Nombre de trabajo',
         tagline: 'Gestión de pacientes para clínicas de bariatría y metabolismo.',
         statusLabel: 'En desarrollo',
@@ -251,7 +251,7 @@ export const es = {
         problem:
           'Las clínicas de bariatría y metabolismo dan seguimiento a sus pacientes a través de estudios de laboratorio recurrentes y básculas de composición corporal (InBody), pero el personal suele transcribir esos valores a mano desde PDFs y tickets impresos — lento, propenso a errores, y difícil de convertir en una vista clara del progreso del paciente en el tiempo.',
         solution:
-          'Ultra Manejo de Clínica lee automáticamente los reportes de laboratorio en PDF (varios formatos de laboratorios de Monterrey) y los tickets de báscula InBody, y arma el expediente del paciente sin captura manual. La comunicación con el paciente ocurre directo por WhatsApp en lugar de llamadas y recordatorios manuales.',
+          'Clinic Plus lee automáticamente los reportes de laboratorio en PDF (varios formatos de laboratorios de Monterrey) y los tickets de báscula InBody, y arma el expediente del paciente sin captura manual. La comunicación con el paciente ocurre directo por WhatsApp en lugar de llamadas y recordatorios manuales.',
         scope: [
           'Expedientes de pacientes',
           'Lectura automática de estudios de laboratorio (PDF)',

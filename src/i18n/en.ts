@@ -240,8 +240,8 @@ export const en = {
       'We’re building our own products alongside client work. This is where we document that process in real time — with each one’s actual current status.',
     flagship: [
       {
-        slug: 'ultra-manejo-clinica',
-        name: 'Ultra Clinic Management',
+        slug: 'clinic-plus',
+        name: 'Clinic Plus',
         nameNote: 'Working name',
         tagline: 'Patient management for bariatric and metabolic clinics.',
         statusLabel: 'In development',
@@ -249,7 +249,7 @@ export const en = {
         problem:
           'Bariatric and metabolic clinics track patient progress through recurring lab work and body-composition scales (InBody), but staff usually retype those values by hand from PDFs and printed tickets — slow, error-prone, and hard to turn into a clear view of a patient’s progress over time.',
         solution:
-          'Ultra Clinic Management automatically reads lab report PDFs (several formats from Monterrey labs) and InBody scale tickets, and builds the patient record without manual entry. Patient communication happens directly over WhatsApp instead of manual calls and reminders.',
+          'Clinic Plus automatically reads lab report PDFs (several formats from Monterrey labs) and InBody scale tickets, and builds the patient record without manual entry. Patient communication happens directly over WhatsApp instead of manual calls and reminders.',
         scope: [
           'Patient records',
           'Automated lab report parsing (PDF)',
