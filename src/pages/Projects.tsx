@@ -1,14 +1,9 @@
-import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { CalendlyButton } from '@/components/CalendlyButton'
 
 export function Projects() {
   const { t } = useLanguage()
-  // Index into t.projects.filters, or null for "all" — index-based so the
-  // selection survives a language switch (the label strings themselves change).
-  const [filterIndex, setFilterIndex] = useState<number | null>(null)
-  const activeCategory = filterIndex === null ? null : t.projects.filters[filterIndex]
-  const visible = activeCategory === null ? t.projects.samples : t.projects.samples.filter((p) => p.category === activeCategory)
 
   return (
     <div className="min-h-screen pt-24 pb-32">
@@ -25,51 +20,28 @@ export function Projects() {
           </div>
         </div>
 
-        {/* Filter */}
-        <div className="flex gap-2 flex-wrap mt-10 mb-2">
-          <button
-            onClick={() => setFilterIndex(null)}
-            className={`font-mono text-[10px] tracking-[0.12em] uppercase px-4 py-2 border transition-all duration-200 ${
-              filterIndex === null
-                ? 'border-teal/60 text-teal bg-teal/8'
-                : 'border-white/10 text-white/35 hover:text-white/60 hover:border-white/25'
-            }`}
-          >
-            {t.projects.filterAll}
-          </button>
-          {t.projects.filters.map((f, i) => (
-            <button
-              key={f}
-              onClick={() => setFilterIndex(i)}
-              className={`font-mono text-[10px] tracking-[0.12em] uppercase px-4 py-2 border transition-all duration-200 ${
-                filterIndex === i
-                  ? 'border-teal/60 text-teal bg-teal/8'
-                  : 'border-white/10 text-white/35 hover:text-white/60 hover:border-white/25'
-              }`}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-white/7 mt-12">
+          {t.projects.flagship.map((p) => (
+            <Link
+              key={p.slug}
+              to={`/projects/${p.slug}`}
+              className="bg-card p-8 md:p-10 flex flex-col group hover:bg-[#111110] transition-colors duration-300"
             >
-              {f}
-            </button>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-white/7 mt-10">
-          {visible.map((p, i) => (
-            <div key={i} className="bg-card p-8 md:p-10 flex flex-col">
-              <div className="flex items-start justify-between mb-6">
-                <span className="font-mono text-[9px] tracking-[0.15em] uppercase text-purple/60">
-                  {p.category}
+              <div className="flex items-start justify-between mb-8 gap-3">
+                <span className="font-mono text-[9px] tracking-[0.15em] uppercase px-2 py-1 border border-teal/30 text-teal/80 shrink-0">
+                  {p.statusLabel}
                 </span>
-                <span className="font-mono text-[8px] tracking-[0.12em] uppercase px-2 py-1 border border-teal/30 text-teal/70 shrink-0 ml-3">
-                  {t.projects.sampleBadge}
+                <span className="font-mono text-[9px] tracking-[0.15em] text-white/25 uppercase group-hover:text-teal transition-colors duration-300 shrink-0">
+                  →
                 </span>
               </div>
 
-              <h3 className="text-white/90 text-lg font-medium mb-1">{p.title}</h3>
-              <div className="font-mono text-[10px] tracking-[0.1em] uppercase text-white/30 mb-5">{p.client}</div>
+              <h3 className="text-white text-2xl font-light mb-2 group-hover:text-teal transition-colors duration-300">
+                {p.name}
+              </h3>
+              <div className="font-mono text-[9px] tracking-[0.1em] uppercase text-white/25 mb-5">{p.nameNote}</div>
 
-              <p className="text-white/45 text-[13px] leading-relaxed mb-6 pl-3 border-l border-teal/30">
-                {p.outcome}
-              </p>
+              <p className="text-white/50 text-[14px] leading-relaxed mb-8">{p.tagline}</p>
 
               <div className="flex flex-wrap gap-1.5 mt-auto">
                 {p.tags.map((tag) => (
@@ -81,7 +53,7 @@ export function Projects() {
                   </span>
                 ))}
               </div>
-            </div>
+            </Link>
           ))}
         </div>
 

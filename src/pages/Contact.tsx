@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useLanguage } from '@/i18n/LanguageContext'
-import { CalendlyButton } from '@/components/CalendlyButton'
+import { CalendlyInlineEmbed } from '@/components/CalendlyInlineEmbed'
 
 const CONTACT_EMAIL = 'hola@schema.mx'
 const FORMSUBMIT_ENDPOINT = `https://formsubmit.co/ajax/${CONTACT_EMAIL}`
@@ -174,16 +174,9 @@ export function Contact() {
 
         <div className="mt-20 pt-16 border-t border-white/7">
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-16">
-            <div className="lg:col-span-3 border border-teal/20 bg-teal/5 p-10 md:p-14 flex flex-col justify-between">
-              <div>
-                <div className="font-mono text-[10px] tracking-[0.2em] text-teal uppercase mb-4">
-                  {t.contact.scheduleTitle}
-                </div>
-                <p className="text-white/60 text-[15px] leading-relaxed mb-10 max-w-lg">{t.contact.scheduleBody}</p>
-              </div>
-              <CalendlyButton className="self-start px-8 py-3.5 bg-teal text-ink font-mono text-[12px] tracking-[0.1em] uppercase hover:bg-teal/80 transition-colors duration-200">
-                {t.contact.scheduleCta}
-              </CalendlyButton>
+            <div className="lg:col-span-3">
+              <p className="text-white/60 text-[14px] leading-relaxed mb-6 max-w-lg">{t.contact.scheduleBody}</p>
+              <CalendlyInlineEmbed />
             </div>
 
             <div className="lg:col-span-2 flex flex-col gap-10">
