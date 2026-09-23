@@ -387,56 +387,91 @@ export function OmegaLanding() {
   const t = CONTENT[lang]
   const [activeTour, setActiveTour] = useState(0)
   const tour = t.tour[activeTour]
+  const [menuOpen, setMenuOpen] = useState(false)
 
   return (
     <div className="bg-white text-[#0e1c1a]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
       {/* NAV */}
       <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-[#e8f0ef]">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between relative">
           <OmegaLogo />
-          <div className="flex items-center gap-4 sm:gap-5">
+          <div className="flex items-center gap-2 sm:gap-4 md:gap-5">
             <a href="#producto" className="hidden md:block text-sm text-[#5a7a76] hover:text-[#0e1c1a] transition-colors">
               {t.navProduct}
             </a>
             <a href="#por-que" className="hidden md:block text-sm text-[#5a7a76] hover:text-[#0e1c1a] transition-colors">
               {t.navWhy}
             </a>
-            <a href="#precios" className="hidden sm:block text-sm text-[#5a7a76] hover:text-[#0e1c1a] transition-colors">
+            <a href="#precios" className="hidden md:block text-sm text-[#5a7a76] hover:text-[#0e1c1a] transition-colors">
               {t.navPricing}
             </a>
-            <div className="flex items-center border border-[#e8f0ef] rounded-full overflow-hidden text-xs font-semibold">
+            <div className="flex items-center border border-[#e8f0ef] rounded-full overflow-hidden text-xs font-semibold shrink-0">
               <button
                 onClick={() => setLang('es')}
-                className={`px-2.5 py-1.5 transition-colors ${lang === 'es' ? 'bg-[#0e1c1a] text-white' : 'text-[#8aada9] hover:text-[#0e1c1a]'}`}
+                className={`px-2 sm:px-2.5 py-1.5 transition-colors ${lang === 'es' ? 'bg-[#0e1c1a] text-white' : 'text-[#8aada9] hover:text-[#0e1c1a]'}`}
               >
                 ES
               </button>
               <button
                 onClick={() => setLang('en')}
-                className={`px-2.5 py-1.5 transition-colors ${lang === 'en' ? 'bg-[#0e1c1a] text-white' : 'text-[#8aada9] hover:text-[#0e1c1a]'}`}
+                className={`px-2 sm:px-2.5 py-1.5 transition-colors ${lang === 'en' ? 'bg-[#0e1c1a] text-white' : 'text-[#8aada9] hover:text-[#0e1c1a]'}`}
               >
                 EN
               </button>
             </div>
             <Link
               to="/omega/demo"
-              className="bg-[#0e1c1a] text-white text-sm px-5 py-2.5 rounded-full hover:bg-[#1ab89a] transition-colors font-medium"
+              className="bg-[#0e1c1a] text-white text-[13px] sm:text-sm px-3.5 sm:px-5 py-2.5 rounded-full hover:bg-[#1ab89a] transition-colors font-medium whitespace-nowrap"
             >
-              {t.navDemo}
+              {/* Narrow phones can't fit the full label alongside the logo, language toggle and menu. */}
+              <span className="min-[360px]:hidden">Demo</span>
+              <span className="hidden min-[360px]:inline">{t.navDemo}</span>
             </Link>
+            <button
+              onClick={() => setMenuOpen((o) => !o)}
+              aria-label="Menú"
+              className="md:hidden w-8 h-8 shrink-0 flex items-center justify-center text-[#0e1c1a]"
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                {menuOpen ? (
+                  <path d="M5 5l10 10M15 5L5 15" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+                ) : (
+                  <path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+                )}
+              </svg>
+            </button>
           </div>
+
+          {menuOpen && (
+            <div className="md:hidden absolute top-full left-0 right-0 bg-white border-b border-[#e8f0ef] shadow-[0_8px_24px_rgba(14,28,26,0.08)] p-2">
+              {[
+                ['#producto', t.navProduct],
+                ['#por-que', t.navWhy],
+                ['#precios', t.navPricing],
+              ].map(([href, label]) => (
+                <a
+                  key={href}
+                  href={href}
+                  onClick={() => setMenuOpen(false)}
+                  className="block px-4 py-3 rounded-lg text-[15px] font-medium text-[#0e1c1a] hover:bg-[#f7f8f9] transition-colors"
+                >
+                  {label}
+                </a>
+              ))}
+            </div>
+          )}
         </div>
       </nav>
 
       {/* HERO */}
-      <section className="max-w-6xl mx-auto px-6 pt-16 pb-24">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-10 sm:pt-16 pb-16 sm:pb-24">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
           <div>
             <div className="inline-flex items-center gap-2 bg-[#f0faf7] text-[#1ab89a] text-xs font-medium px-3.5 py-1.5 rounded-full mb-8">
               <span className="w-1.5 h-1.5 rounded-full bg-[#1ab89a]" />
               {t.heroBadge}
             </div>
-            <h1 className="text-4xl lg:text-5xl font-extrabold leading-[1.1] tracking-tight text-[#0e1c1a] mb-6">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-[1.1] tracking-tight text-[#0e1c1a] mb-6">
               {t.heroTitle1}
               <br />
               <span className="text-[#1ab89a]">{t.heroTitle2}</span>
@@ -455,7 +490,7 @@ export function OmegaLanding() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-[#e8f0ef] bg-[#f8fefe] p-8">
+          <div className="rounded-2xl border border-[#e8f0ef] bg-[#f8fefe] p-6 sm:p-8">
             <p className="text-xs font-semibold text-[#1ab89a] tracking-widest uppercase mb-4">{t.cardEyebrow}</p>
             <p className="text-[#0e1c1a] text-base leading-relaxed mb-4">{t.cardBody1}</p>
             <p className="text-[#5a7a76] text-sm leading-relaxed mb-4">{t.cardBody2}</p>
@@ -466,14 +501,14 @@ export function OmegaLanding() {
 
       {/* WHAT IT DOES */}
       <section className="border-y border-[#e8f0ef] bg-[#f8fefe]">
-        <div className="max-w-6xl mx-auto px-6 py-24">
-          <div className="grid lg:grid-cols-[280px_1fr] gap-16">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
+          <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8 lg:gap-16">
             <div className="lg:pt-2">
               <p className="text-xs font-semibold text-[#1ab89a] tracking-widest uppercase mb-3">{t.featuresEyebrow}</p>
               <h2 className="text-3xl font-extrabold text-[#0e1c1a] leading-tight mb-4">{t.featuresTitle}</h2>
               <p className="text-[#5a7a76] text-sm leading-relaxed font-light">{t.featuresSub}</p>
             </div>
-            <div className="grid sm:grid-cols-2 gap-px bg-[#e8f0ef] border border-[#e8f0ef] rounded-2xl overflow-hidden">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-[#e8f0ef] border border-[#e8f0ef] rounded-2xl overflow-hidden">
               {t.features.map((f) => (
                 <div key={f.num} className="bg-white p-7 hover:bg-[#f8fefe] transition-colors group">
                   <p className="text-xs text-[#c8ddd9] font-medium mb-4" style={{ fontFamily: "'DM Mono', monospace" }}>
@@ -491,7 +526,7 @@ export function OmegaLanding() {
       </section>
 
       {/* PRODUCT TOUR */}
-      <section className="max-w-6xl mx-auto px-6 py-24" id="producto">
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-24" id="producto">
         <div className="text-center mb-14">
           <p className="text-xs font-semibold text-[#1ab89a] tracking-widest uppercase mb-3">{t.tourEyebrow}</p>
           <h2 className="text-3xl font-extrabold text-[#0e1c1a] mb-3">{t.tourTitle}</h2>
@@ -514,7 +549,7 @@ export function OmegaLanding() {
           ))}
         </div>
 
-        <div className="grid lg:grid-cols-5 gap-10 rounded-2xl border border-[#e8f0ef] bg-[#f8fefe] p-8 md:p-12" key={tour.id}>
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-10 rounded-2xl border border-[#e8f0ef] bg-[#f8fefe] p-5 sm:p-8 md:p-12" key={tour.id}>
           <div className="lg:col-span-2">
             <h3 className="text-2xl font-extrabold text-[#0e1c1a] mb-4 leading-tight">{tour.title}</h3>
             <p className="text-[#5a7a76] text-sm leading-relaxed font-light">{tour.desc}</p>
@@ -536,7 +571,7 @@ export function OmegaLanding() {
 
       {/* WHY OMEGA */}
       <section className="border-y border-[#e8f0ef] bg-[#f8fefe]" id="por-que">
-        <div className="max-w-6xl mx-auto px-6 py-24">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
           <div className="text-center mb-14">
             <p className="text-xs font-semibold text-[#1ab89a] tracking-widest uppercase mb-3">{t.whyEyebrow}</p>
             <h2 className="text-3xl font-extrabold text-[#0e1c1a] mb-3">{t.whyTitle}</h2>
@@ -567,7 +602,7 @@ export function OmegaLanding() {
             ))}
           </div>
 
-          <div className="rounded-2xl bg-[#0e1c1a] p-8 md:p-10 flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
+          <div className="rounded-2xl bg-[#0e1c1a] p-6 sm:p-8 md:p-10 flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
             <span className="text-4xl shrink-0">🇲🇽</span>
             <div>
               <h3 className="text-white text-lg font-bold mb-1.5">{t.whyMexicoTitle}</h3>
@@ -578,12 +613,12 @@ export function OmegaLanding() {
       </section>
 
       {/* HOW IT WORKS */}
-      <section className="max-w-6xl mx-auto px-6 py-24">
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
         <div className="text-center mb-14">
           <p className="text-xs font-semibold text-[#1ab89a] tracking-widest uppercase mb-3">{t.stepsEyebrow}</p>
           <h2 className="text-3xl font-extrabold text-[#0e1c1a]">{t.stepsTitle}</h2>
         </div>
-        <div className="grid md:grid-cols-3 gap-8 relative">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
           <div className="hidden md:block absolute top-8 left-[calc(16.67%+16px)] right-[calc(16.67%+16px)] h-px bg-[#e8f0ef]" />
           {t.steps.map((s) => (
             <div key={s.step} className="text-center relative">
@@ -599,23 +634,24 @@ export function OmegaLanding() {
 
       {/* PRICING */}
       <section className="border-y border-[#e8f0ef] bg-[#f8fefe]" id="precios">
-        <div className="max-w-6xl mx-auto px-6 py-24">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
           <div className="text-center mb-6">
             <p className="text-xs font-semibold text-[#1ab89a] tracking-widest uppercase mb-3">{t.pricingEyebrow}</p>
             <h2 className="text-3xl font-extrabold text-[#0e1c1a] mb-4">{t.pricingTitle}</h2>
             <p className="text-[#5a7a76] text-sm leading-relaxed font-light max-w-lg mx-auto">{t.pricingSub}</p>
           </div>
 
-          <div className="inline-flex items-center gap-2 bg-white border border-[#d0e8e4] text-[#0e1c1a] text-sm px-5 py-2.5 rounded-full mb-12 mx-auto flex w-fit">
+          <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 bg-white border border-[#d0e8e4] text-[#0e1c1a] text-sm px-5 py-3 sm:py-2.5 rounded-2xl sm:rounded-full mb-12 mx-auto w-full sm:w-fit text-center">
             <span className="font-semibold text-[#1ab89a]">{t.setupBadgeBold}</span>
-            <span className="text-[#8aada9]">· {t.setupBadgeRest}</span>
+            <span className="text-[#8aada9] hidden sm:inline">·</span>
+            <span className="text-[#8aada9]">{t.setupBadgeRest}</span>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {t.tiers.map((tier) => (
               <div
                 key={tier.name}
-                className={`flex flex-col rounded-2xl p-7 ${
+                className={`flex flex-col rounded-2xl p-5 sm:p-7 ${
                   tier.highlight ? 'bg-[#0e1c1a] text-white border border-[#0e1c1a]' : 'bg-white border border-[#e8f0ef]'
                 }`}
               >
@@ -651,8 +687,8 @@ export function OmegaLanding() {
       </section>
 
       {/* CTA */}
-      <section className="max-w-6xl mx-auto px-6 py-24">
-        <div className="bg-[#0e1c1a] rounded-2xl px-10 py-14 text-center relative overflow-hidden">
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
+        <div className="bg-[#0e1c1a] rounded-2xl px-6 sm:px-10 py-10 sm:py-14 text-center relative overflow-hidden">
           <div
             className="absolute inset-0 opacity-[0.07]"
             style={{
@@ -662,7 +698,7 @@ export function OmegaLanding() {
           />
           <div className="relative">
             <p className="text-xs font-semibold text-[#1ab89a] tracking-widest uppercase mb-4">{t.ctaEyebrow}</p>
-            <h2 className="text-3xl lg:text-4xl font-extrabold text-white mb-4 leading-tight">{t.ctaTitle}</h2>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white mb-4 leading-tight">{t.ctaTitle}</h2>
             <p className="text-[#5a8a82] text-base mb-8 max-w-sm mx-auto font-light">{t.ctaBody}</p>
             <div className="flex flex-wrap gap-3 justify-center">
               <Link
@@ -681,7 +717,7 @@ export function OmegaLanding() {
 
       {/* OMEGA FOOTER STRIP */}
       <div className="border-t border-[#e8f0ef]">
-        <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <OmegaLogo />
           <a href="https://schema.mx" className="text-xs text-[#c8ddd9] hover:text-[#8aada9] transition-colors">
             {t.footerCredit}

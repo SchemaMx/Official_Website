@@ -12,19 +12,39 @@ import { OmegaLanding } from '@/pages/OmegaLanding'
 import { OmegaDemo } from '@/pages/OmegaDemo'
 import { Contact } from '@/pages/Contact'
 
+// Omega pages carry their own product identity, so a link shared with a doctor
+// previews as Omega rather than as the Schema consultancy site.
+const OMEGA_META = {
+  title: 'Omega | Software para clínicas de bariatría y metabolismo',
+  description:
+    'Omega Gestionador de Clínica Inteligente: expediente completo, lectura automática de laboratorios e InBody, y automatización por WhatsApp para clínicas en México.',
+}
+
+function setMeta(name: string, content: string) {
+  let el = document.querySelector(`meta[name="${name}"]`)
+  if (!el) {
+    el = document.createElement('meta')
+    el.setAttribute('name', name)
+    document.head.appendChild(el)
+  }
+  el.setAttribute('content', content)
+}
+
 function DocumentMeta() {
   const { t } = useLanguage()
+  const { pathname } = useLocation()
+  const isOmega = pathname.startsWith('/omega')
 
   useEffect(() => {
-    document.title = t.meta.title
-    let meta = document.querySelector('meta[name="description"]')
-    if (!meta) {
-      meta = document.createElement('meta')
-      meta.setAttribute('name', 'description')
-      document.head.appendChild(meta)
-    }
-    meta.setAttribute('content', t.meta.description)
-  }, [t])
+    const { title, description } = isOmega ? OMEGA_META : { title: t.meta.title, description: t.meta.description }
+    document.title = title
+    setMeta('description', description)
+    // Omega's pages are light; without this the dark Schema page background
+    // shows through on overscroll and in the mobile browser chrome.
+    const pageBg = isOmega ? '#ffffff' : '#1d1d1b'
+    document.documentElement.style.backgroundColor = pageBg
+    setMeta('theme-color', pageBg)
+  }, [t, isOmega])
 
   return null
 }

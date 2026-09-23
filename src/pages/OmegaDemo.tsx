@@ -150,9 +150,10 @@ function CollapsibleBar({ open, onToggle, openLabel, closedLabel, icon }: { open
   );
 }
 
-// Real-style axis line chart: gridlines + y-axis ticks + x-axis date labels
+// Real-style axis line chart: gridlines + y-axis ticks + x-axis date labels.
+// Labels are clamped to the viewBox so edge values aren't clipped by the SVG bounds.
 function AxisChart({ data, color = "#1ab89a", suffix = "", decimals = 1 }: { data: { date: string; value: number }[]; color?: string; suffix?: string; decimals?: number }) {
-  const W = 300, H = 140, PADL = 32, PADR = 12, PADT = 16, PADB = 22;
+  const W = 300, H = 140, PADL = 46, PADR = 14, PADT = 16, PADB = 22;
   const vals = data.map((d) => d.value);
   const min = Math.min(...vals), max = Math.max(...vals);
   const range = max - min || Math.max(1, max * 0.1);
@@ -161,6 +162,14 @@ function AxisChart({ data, color = "#1ab89a", suffix = "", decimals = 1 }: { dat
   const y = (v: number) => PADT + ((yMax - v) / (yMax - yMin)) * (H - PADT - PADB);
   const path = data.map((d, i) => `${i === 0 ? "M" : "L"}${x(i)},${y(d.value)}`).join(" ");
   const ticks = [yMax, (yMax + yMin) / 2, yMin];
+
+  // Keep a centered label inside [0, W] by flipping its anchor near the edges.
+  const fit = (cx: number, text: string, fontPx: number) => {
+    const half = (text.length * fontPx * 0.62) / 2;
+    if (cx - half < 2) return { x: 2, anchor: "start" as const };
+    if (cx + half > W - 2) return { x: W - 2, anchor: "end" as const };
+    return { x: cx, anchor: "middle" as const };
+  };
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: H }}>
@@ -173,19 +182,25 @@ function AxisChart({ data, color = "#1ab89a", suffix = "", decimals = 1 }: { dat
         </g>
       ))}
       {data.length > 1 && <path d={path} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />}
-      {data.map((d, i) => (
-        <g key={i}>
-          <circle cx={x(i)} cy={y(d.value)} r={i === data.length - 1 ? 4 : 3} fill={i === data.length - 1 ? color : "white"} stroke={color} strokeWidth="1.5" />
-          {i === data.length - 1 && (
-            <text x={x(i)} y={y(d.value) - 10} textAnchor="middle" fontSize="10" fontWeight="700" fill={color} fontFamily="'DM Mono', monospace">
-              {d.value}{suffix}
+      {data.map((d, i) => {
+        const isLast = i === data.length - 1;
+        const valueLabel = `${d.value}${suffix}`;
+        const vPos = fit(x(i), valueLabel, 10);
+        const dPos = fit(x(i), d.date, 9);
+        return (
+          <g key={i}>
+            <circle cx={x(i)} cy={y(d.value)} r={isLast ? 4 : 3} fill={isLast ? color : "white"} stroke={color} strokeWidth="1.5" />
+            {isLast && (
+              <text x={vPos.x} y={y(d.value) - 10} textAnchor={vPos.anchor} fontSize="10" fontWeight="700" fill={color} fontFamily="'DM Mono', monospace">
+                {valueLabel}
+              </text>
+            )}
+            <text x={dPos.x} y={H - 6} textAnchor={dPos.anchor} fontSize="9" fill="#8aada9" fontFamily="'DM Mono', monospace">
+              {d.date}
             </text>
-          )}
-          <text x={x(i)} y={H - 6} textAnchor="middle" fontSize="9" fill="#8aada9" fontFamily="'DM Mono', monospace">
-            {d.date}
-          </text>
-        </g>
-      ))}
+          </g>
+        );
+      })}
     </svg>
   );
 }
@@ -278,7 +293,7 @@ function ResumenTab({ patient }: { patient: typeof PATIENTS[0] }) {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {[
           { label: "Peso inicial", value: "81.0 kg", sub: "primer registro · InBody inicial", accent: false },
           { label: "Peso actual", value: "79.5 kg", sub: `IMC ${patient.bmi}`, accent: false },
@@ -296,7 +311,7 @@ function ResumenTab({ patient }: { patient: typeof PATIENTS[0] }) {
 
       {panelOpen && (
         <div className="space-y-4">
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="rounded-2xl border border-[#e8f0ef] bg-white shadow-[0_1px_2px_rgba(14,28,26,0.04)] p-5">
               <p className="text-xs font-semibold text-[#0e1c1a] mb-2">Evolución de peso</p>
               <AxisChart data={WEIGHT_DATA} suffix=" kg" />
@@ -318,7 +333,7 @@ function ResumenTab({ patient }: { patient: typeof PATIENTS[0] }) {
                 <button
                   key={m}
                   onClick={() => setMetric(m)}
-                  className={`text-[11px] px-2.5 py-1 rounded-full border transition-colors ${
+                  className={`text-[11px] px-3 py-1.5 rounded-full border transition-colors ${
                     metric === m ? "bg-[#1ab89a] text-white border-[#1ab89a] font-medium" : "border-[#e8f0ef] text-[#8aada9] hover:text-[#1ab89a] hover:border-[#1ab89a]/40"
                   }`}
                 >
@@ -326,7 +341,7 @@ function ResumenTab({ patient }: { patient: typeof PATIENTS[0] }) {
                 </button>
               ))}
             </div>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <AxisChart data={BODY_METRIC_SERIES[metric]} suffix={metric === "% Grasa" ? "%" : " kg"} color="#e85555" />
                 <p className="text-[10px] text-[#c8ddd9] text-center -mt-2">InBody</p>
@@ -382,7 +397,7 @@ function ResumenTab({ patient }: { patient: typeof PATIENTS[0] }) {
 function AntecedentesTab() {
   return (
     <div className="space-y-4">
-      <div className="grid md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <SectionCard title="Datos personales">
           <LabelValueRow label="Fecha de nacimiento" value="14 mar 1996 (29 años)" />
           <LabelValueRow label="Estado civil" value="Soltera" />
@@ -435,7 +450,7 @@ function AntecedentesTab() {
 function SignosTab() {
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="rounded-2xl border border-[#e8f0ef] bg-white shadow-[0_1px_2px_rgba(14,28,26,0.04)] p-5">
           <p className="text-[11px] font-semibold text-[#8aada9] uppercase tracking-wide mb-2">Dinamometría (fuerza de prensión)</p>
           <p className="text-2xl font-bold text-[#0e1c1a]">26.5 <span className="text-sm font-normal text-[#8aada9]">kg</span></p>
@@ -452,7 +467,7 @@ function SignosTab() {
       </div>
 
       <SectionCard title="Nueva toma de signos vitales">
-        <div className="grid grid-cols-3 md:grid-cols-7 gap-3 mb-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-7 gap-3 mb-4">
           {[["TAS", "114", "mmHg"], ["TAD", "76", "mmHg"], ["F.C.", "71", "lpm"], ["SAT O₂", "98", "%"], ["PESO", "79.5", "kg"], ["DINAMOMETRÍA", "26.5", "kg"], ["SENTADILLAS 30S", "20", "reps"]].map(([label, val, unit]) => (
             <div key={label} className="rounded-lg border border-[#e8f0ef] bg-[#f7f8f9] px-3 py-2">
               <p className="text-[9.5px] font-semibold text-[#8aada9] uppercase tracking-wide mb-1">{label}</p>
@@ -538,12 +553,12 @@ function InBodyTab() {
         Volver a la lista
       </button>
 
-      <div className="grid lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="rounded-2xl border border-[#e8f0ef] bg-white shadow-[0_1px_2px_rgba(14,28,26,0.04)] p-5">
           <p className="text-[11px] font-semibold text-[#8aada9] uppercase tracking-wide mb-3">Reporte InBody original</p>
           <div className="rounded-xl border border-[#e8f0ef] bg-[#fcfcfc] p-4" style={{ fontFamily: "'DM Mono', monospace" }}>
             <p className="text-[13px] font-bold text-[#e85555] mb-2">InBody <span className="text-[#0e1c1a]">[InBody370S]</span></p>
-            <div className="grid grid-cols-4 gap-2 text-[9.5px] text-[#8aada9] mb-3 pb-2 border-b border-[#e8f0ef]">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[9.5px] text-[#8aada9] mb-3 pb-2 border-b border-[#e8f0ef]">
               <span>ID {r.folio}</span><span>Edad 29</span><span>Género F</span><span>{r.date}</span>
             </div>
             {[["Agua corporal", 60], ["Proteínas", 45], ["Minerales", 38], ["Masa magra", 70], ["Peso", 55]].map(([label, w]) => (
@@ -570,7 +585,7 @@ function InBodyTab() {
           </div>
 
           <SectionCard title="Composición corporal">
-            <div className="grid grid-cols-2 gap-x-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
               <LabelValueRow label="Peso" value={r.peso} />
               <LabelValueRow label="% Grasa corporal" value={r.grasa} />
               <LabelValueRow label="Masa muscular esq." value={r.mme} />
@@ -579,7 +594,7 @@ function InBodyTab() {
           </SectionCard>
 
           <SectionCard title="Parámetros de investigación">
-            <div className="grid grid-cols-2 gap-x-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
               <LabelValueRow label="Grasa visceral" value="18" />
               <LabelValueRow label="Relación cintura/cadera" value="0.87" />
               <LabelValueRow label="TMB" value="1310 kcal" />
@@ -632,12 +647,12 @@ function EstudiosTab() {
         Volver a estudios
       </button>
 
-      <div className="grid lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="rounded-2xl border border-[#e8f0ef] bg-white shadow-[0_1px_2px_rgba(14,28,26,0.04)] p-5">
           <p className="text-[11px] font-semibold text-[#8aada9] uppercase tracking-wide mb-3">Documento original</p>
           <div className="rounded-xl border border-[#e8f0ef] bg-[#fcfcfc] p-4" style={{ fontFamily: "'DM Mono', monospace" }}>
             <p className="text-[12px] font-bold text-[#1ab89a] mb-2">LABORATORIO DE ANÁLISIS CLÍNICOS</p>
-            <div className="grid grid-cols-2 gap-1 text-[9.5px] text-[#8aada9] mb-3 pb-2 border-b border-[#e8f0ef]">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 text-[9.5px] text-[#8aada9] mb-3 pb-2 border-b border-[#e8f0ef]">
               <span>Folio: 264652000114</span><span>Fecha: 3 sep 2026</span>
               <span>Paciente: expediente activo</span><span>Sexo: F</span>
             </div>
@@ -654,7 +669,7 @@ function EstudiosTab() {
             {LAB_GROUPS.map((g) => (
               <div key={g.title}>
                 <p className="text-[10.5px] font-semibold text-[#8aada9] uppercase tracking-wide mb-2">{g.title}</p>
-                <div className="grid grid-cols-2 gap-x-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
                   {g.values.map(([label, val, unit]) => (
                     <LabelValueRow key={label} label={label} value={`${val} ${unit}`} />
                   ))}
@@ -688,7 +703,7 @@ function RiesgoTab() {
   return (
     <div className="space-y-4">
       <SectionCard title="Panel de riesgo — resumen">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
           <RiskCard label="IMC kg/m²" value={String(30.9)} note="Obesidad I" status="mod" />
           <RiskCard label="Riesgo CV Framingham" value="8%" note="Bajo (<10%)" status="ok" />
           <RiskCard label="STOP-BANG" value="2/8" note="Riesgo bajo SAOS" status="ok" />
@@ -730,7 +745,7 @@ function RiesgoTab() {
           </SectionCard>
 
           <SectionCard title="Resistencia a la insulina y adiposidad">
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <RiskCard label="HOMA-IR" value="3.2" note="HOMA-IR elevado (>2.5)" status="high" />
               <RiskCard label="Índice TyG" value="4.7" note="Sin IR (<4.9)" status="ok" />
               <RiskCard label="Índice VAI" value="2.1" note="Adiposidad visceral elevada" status="mod" />
@@ -738,7 +753,7 @@ function RiesgoTab() {
           </SectionCard>
 
           <SectionCard title="Sarcopenia — tamizaje (EWGSOP2)" action={<Pill tone="teal">SARC-F: 1/10 · Bajo riesgo</Pill>}>
-            <div className="grid grid-cols-2 gap-x-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6">
               <LabelValueRow label="Fuerza (cargar 4.5 kg)" value="Ninguna · 0" />
               <LabelValueRow label="Caminar (cruzar cuarto)" value="Ninguna · 0" />
               <LabelValueRow label="Levantarse silla/cama" value="Alguna · 1" />
@@ -759,7 +774,7 @@ function PlanTab() {
   ];
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         <div className="rounded-2xl border border-[#e8f0ef] bg-white shadow-[0_1px_2px_rgba(14,28,26,0.04)] p-5">
           <p className="text-xs text-[#8aada9] mb-1">Peso inicial</p>
           <p className="text-xl font-bold text-[#0e1c1a]">81.0 <span className="text-sm font-normal text-[#8aada9]">kg</span></p>
@@ -892,7 +907,7 @@ function NutricionTab({ patient }: { patient: typeof PATIENTS[0] }) {
     <div className="space-y-4">
       <SectionCard title="Circunferencias">
         <p className="text-[11px] font-semibold text-[#8aada9] uppercase tracking-wide mb-3">Nueva toma de medidas</p>
-        <div className="grid grid-cols-5 gap-3 mb-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 mb-4">
           {zones.map((z) => (
             <div key={z.label} className="rounded-lg border border-[#e8f0ef] bg-[#f7f8f9] px-3 py-2">
               <p className="text-[9.5px] font-semibold text-[#8aada9] uppercase tracking-wide mb-1">Circunf. {z.label.toLowerCase()}</p>
@@ -936,7 +951,7 @@ function NutricionTab({ patient }: { patient: typeof PATIENTS[0] }) {
       </div>
 
       {subTab === "nueva" && (
-        <div className="grid md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {zones.map((z) => (
             <div key={z.label} className="rounded-2xl border border-[#e8f0ef] bg-white shadow-[0_1px_2px_rgba(14,28,26,0.04)] p-4">
               <p className="text-xs font-semibold text-[#0e1c1a] mb-1">{z.label}</p>
@@ -993,7 +1008,7 @@ function ActFisicaTab() {
       </SectionCard>
 
       <SectionCard title="Tamizaje de sarcopenia (SARC-F)" action={<Pill tone="teal">SARC-F: 0/10 · Bajo riesgo</Pill>}>
-        <div className="grid grid-cols-2 gap-x-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6">
           <LabelValueRow label="Fuerza (cargar 4.5 kg)" value="Ninguna · 0" />
           <LabelValueRow label="Caminar (cruzar cuarto)" value="Ninguna · 0" />
           <LabelValueRow label="Levantarse silla/cama" value="Ninguna · 0" />
@@ -1024,7 +1039,7 @@ function SeguimientoTab() {
       </div>
 
       <SectionCard title="Nueva consulta">
-        <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
           <div>
             <p className="text-[10.5px] font-semibold text-[#8aada9] uppercase tracking-wide mb-1">Fecha</p>
             <div className="rounded-lg border border-[#e8f0ef] bg-[#f7f8f9] px-3 py-2 text-sm text-[#0e1c1a]">Hoy · 22 sep 2026</div>
@@ -1088,21 +1103,21 @@ function CalendarView() {
 
   return (
     <div className="flex-1 flex flex-col min-h-0">
-      <div className="flex items-center gap-3 px-6 py-4 border-b border-[#e8f0ef] bg-white shrink-0">
-        <button className="w-8 h-8 rounded-lg border border-[#e8f0ef] flex items-center justify-center text-[#5a7a76] hover:border-[#1ab89a]">‹</button>
-        <button className="w-8 h-8 rounded-lg border border-[#e8f0ef] flex items-center justify-center text-[#5a7a76] hover:border-[#1ab89a]">›</button>
-        <p className="text-lg font-bold text-[#0e1c1a]">Septiembre 2026</p>
-        <button className="text-sm text-[#1ab89a] border border-[#1ab89a]/30 px-3 py-1 rounded-full font-medium">Hoy</button>
+      <div className="flex items-center gap-2 sm:gap-3 px-3 sm:px-6 py-3 sm:py-4 border-b border-[#e8f0ef] bg-white shrink-0">
+        <button className="w-8 h-8 rounded-lg border border-[#e8f0ef] flex items-center justify-center text-[#5a7a76] hover:border-[#1ab89a] shrink-0">‹</button>
+        <button className="w-8 h-8 rounded-lg border border-[#e8f0ef] flex items-center justify-center text-[#5a7a76] hover:border-[#1ab89a] shrink-0">›</button>
+        <p className="text-base sm:text-lg font-bold text-[#0e1c1a] truncate">Septiembre 2026</p>
+        <button className="text-xs sm:text-sm text-[#1ab89a] border border-[#1ab89a]/30 px-2.5 sm:px-3 py-1 rounded-full font-medium shrink-0">Hoy</button>
       </div>
 
-      <div className="flex flex-1 min-h-0">
-        <div className="flex-1 flex flex-col p-5 overflow-y-auto">
+      <div className="flex flex-col lg:flex-row flex-1 min-h-0 overflow-y-auto lg:overflow-hidden">
+        <div className="flex-1 flex flex-col p-2.5 sm:p-5 lg:overflow-y-auto">
           <div className="grid grid-cols-7 gap-px bg-[#e8f0ef] border border-[#e8f0ef] rounded-t-2xl overflow-hidden shrink-0">
             {CAL_DAYS.map((d, i) => (
-              <div key={i} className="bg-[#f8fefe] text-center text-[11px] font-semibold text-[#8aada9] py-2">{d}</div>
+              <div key={i} className="bg-[#f8fefe] text-center text-[10px] sm:text-[11px] font-semibold text-[#8aada9] py-1.5 sm:py-2">{d}</div>
             ))}
           </div>
-          <div className="grid grid-cols-7 gap-px bg-[#e8f0ef] border border-t-0 border-[#e8f0ef] rounded-b-2xl overflow-hidden flex-1 [grid-auto-rows:minmax(90px,1fr)]">
+          <div className="grid grid-cols-7 gap-px bg-[#e8f0ef] border border-t-0 border-[#e8f0ef] rounded-b-2xl overflow-hidden flex-1 [grid-auto-rows:minmax(52px,1fr)] sm:[grid-auto-rows:minmax(90px,1fr)]">
             {Array.from({ length: firstWeekday }).map((_, i) => (
               <div key={`pad-${i}`} className="bg-white" />
             ))}
@@ -1111,12 +1126,12 @@ function CalendarView() {
               const isToday = day === today;
               const isBusy = busyDays.includes(day);
               return (
-                <div key={day} className={`bg-white p-2 ${isToday ? "ring-2 ring-inset ring-[#1ab89a]" : ""}`}>
-                  <span className={`text-xs font-medium ${isToday ? "text-[#1ab89a] font-bold" : "text-[#0e1c1a]"}`}>{day}</span>
+                <div key={day} className={`bg-white p-1 sm:p-2 ${isToday ? "ring-2 ring-inset ring-[#1ab89a]" : ""}`}>
+                  <span className={`text-[10px] sm:text-xs font-medium ${isToday ? "text-[#1ab89a] font-bold" : "text-[#0e1c1a]"}`}>{day}</span>
                   {isBusy && (
-                    <div className="mt-1.5 space-y-1">
-                      <div className="h-1.5 rounded-full bg-[#1ab89a]/60 w-4/5" />
-                      {day === today && <div className="h-1.5 rounded-full bg-[#3ab8c8]/50 w-3/5" />}
+                    <div className="mt-1 sm:mt-1.5 space-y-1">
+                      <div className="h-1 sm:h-1.5 rounded-full bg-[#1ab89a]/60 w-4/5" />
+                      {day === today && <div className="hidden sm:block h-1.5 rounded-full bg-[#3ab8c8]/50 w-3/5" />}
                     </div>
                   )}
                 </div>
@@ -1125,7 +1140,7 @@ function CalendarView() {
           </div>
         </div>
 
-        <aside className="w-80 border-l border-[#e8f0ef] bg-white p-5 overflow-y-auto shrink-0">
+        <aside className="w-full lg:w-80 border-t lg:border-t-0 lg:border-l border-[#e8f0ef] bg-white p-4 sm:p-5 lg:overflow-y-auto shrink-0">
           <p className="text-xs font-semibold text-[#0e1c1a] mb-1">Hoy · 12 sep</p>
           <p className="text-xs text-[#8aada9] mb-5">{CAL_APPOINTMENTS.length} citas agendadas</p>
           <div className="space-y-3">
@@ -1153,23 +1168,23 @@ const RECENT_UPLOADS = [
 
 function EstudiosView() {
   return (
-    <div className="flex-1 p-8 overflow-y-auto">
+    <div className="flex-1 p-4 sm:p-8 overflow-y-auto">
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-2xl font-bold text-[#0e1c1a] mb-2">Subir Estudios de Laboratorio</h1>
-        <p className="text-sm text-[#5a7a76] mb-8">
+        <h1 className="text-xl sm:text-2xl font-bold text-[#0e1c1a] mb-2">Subir Estudios de Laboratorio</h1>
+        <p className="text-sm text-[#5a7a76] mb-6 sm:mb-8">
           Sube el PDF del laboratorio o la foto del ticket de báscula InBody para extraer automáticamente los
           valores del expediente del paciente.
         </p>
 
-        <div className="rounded-2xl border border-[#e8f0ef] bg-[#f8fefe] p-4 mb-6 flex items-center justify-between">
-          <div>
+        <div className="rounded-2xl border border-[#e8f0ef] bg-[#f8fefe] p-4 mb-6 flex items-center justify-between gap-3">
+          <div className="min-w-0">
             <p className="text-[11px] font-semibold text-[#8aada9] uppercase tracking-wide mb-1">Paciente activo</p>
-            <p className="text-sm font-medium text-[#0e1c1a]">Debany Montserrat Luevano Contreras</p>
+            <p className="text-sm font-medium text-[#0e1c1a] truncate">Debany Montserrat Luevano Contreras</p>
           </div>
-          <button className="text-xs text-[#1ab89a] font-medium">Cambiar</button>
+          <button className="text-xs text-[#1ab89a] font-medium shrink-0">Cambiar</button>
         </div>
 
-        <div className="rounded-2xl border-2 border-dashed border-[#d0e8e4] bg-white p-12 text-center mb-10">
+        <div className="rounded-2xl border-2 border-dashed border-[#d0e8e4] bg-white p-6 sm:p-12 text-center mb-10">
           <div className="w-12 h-12 rounded-xl bg-[#f0faf7] flex items-center justify-center mx-auto mb-4">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
               <path d="M10 13V4m0 0L6 8m4-4l4 4M4 16h12" stroke="#1ab89a" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
@@ -1232,14 +1247,14 @@ function WhatsAppView() {
   );
 
   return (
-    <div className="flex-1 p-8 overflow-y-auto">
+    <div className="flex-1 p-4 sm:p-8 overflow-y-auto">
       <div className="max-w-5xl mx-auto">
-        <div className="rounded-2xl border border-[#d0e8e4] bg-[#f0faf7] p-4 flex items-center gap-3 mb-8">
+        <div className="rounded-2xl border border-[#d0e8e4] bg-[#f0faf7] p-4 flex items-center gap-3 mb-6 sm:mb-8">
           <span className="w-2.5 h-2.5 rounded-full bg-[#1ab89a] shrink-0" />
           <p className="text-sm text-[#0e1c1a]"><b>WhatsApp conectado</b> · +52 81 5500 1234</p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <WaPanel title="Confirmaciones de cita" iconPath="M3 8l3.5 3.5L13 5" count={3}>
             {waRow("Ana Paola Ibarra", "Cita mañana, 5:00 PM", false)}
             {waRow("Roberto Salinas", "Cita en 2 días, 9:00 AM", true)}
@@ -1261,17 +1276,27 @@ function WhatsAppView() {
 
 // ── MAIN COMPONENT ─────────────────────────────────────────────────────────
 
+const NAV_VIEWS = [
+  ["dash", "Panel", "M3 13h4v7H3v-7zM10 8h4v12h-4V8zM17 3h4v17h-4V3z"],
+  ["cal", "Calendario", "M4 6h16M7 3v4M17 3v4M5 5h14a1 1 0 011 1v13a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z"],
+  ["est", "Subir Estudios", "M9 15V5m0 0L5 9m4-4l4 4M4 17h16"],
+  ["wa", "WhatsApp", "M4 20l1.3-3.9A7.9 7.9 0 1112 20a7.9 7.9 0 01-4.1-1.1L4 20z"],
+] as const;
+
 export function OmegaDemo() {
   const navigate = useNavigate();
   const [activeView, setActiveView] = useState<"dash" | "cal" | "est" | "wa">("dash");
+  const [navOpen, setNavOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState(1);
   const [activeTab, setActiveTab] = useState("Resumen");
+  const [mobilePane, setMobilePane] = useState<"list" | "detail">("list");
 
   const filtered = PATIENTS.filter((p) =>
     p.name.toLowerCase().includes(search.toLowerCase())
   );
   const patient = PATIENTS.find((p) => p.id === selectedId)!;
+  const activeViewMeta = NAV_VIEWS.find((v) => v[0] === activeView)!;
 
   return (
     <div className="flex flex-col h-screen bg-[#f8fefe]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
@@ -1280,10 +1305,11 @@ export function OmegaDemo() {
         Demo interactivo: pacientes y datos ficticios, solo para fines ilustrativos · Prototipo de menor fidelidad visual, pensado para mostrar la funcionalidad, no el acabado final
       </div>
 
-      {/* TOP NAV — logo + tabs left-aligned, single action right, matching the real app's layout */}
-      <nav className="bg-white border-b border-[#e8f0ef] px-6 h-14 flex items-center gap-2 shrink-0 shadow-[0_1px_2px_rgba(14,28,26,0.04)]">
-        <button onClick={() => navigate("/omega")} className="flex items-center gap-2.5 mr-auto shrink-0">
-          <div className="w-8 h-8 rounded-lg bg-[#1ab89a] flex items-center justify-center">
+      {/* TOP NAV — logo + tabs left-aligned, single action right, matching the real app's layout.
+          Below md, the tab row collapses into a dropdown (same pattern as the real app's mobile nav). */}
+      <nav className="relative bg-white border-b border-[#e8f0ef] px-3 sm:px-6 h-14 flex items-center gap-2 shrink-0 shadow-[0_1px_2px_rgba(14,28,26,0.04)]">
+        <button onClick={() => navigate("/omega")} className="flex items-center gap-2 sm:gap-2.5 mr-auto shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-[#1ab89a] flex items-center justify-center shrink-0">
             <svg width="15" height="15" viewBox="0 0 14 14" fill="none">
               <path d="M7 2v10M2 7h10" stroke="white" strokeWidth="2" strokeLinecap="round"/>
             </svg>
@@ -1295,12 +1321,7 @@ export function OmegaDemo() {
         </button>
 
         <div className="hidden md:flex items-center gap-1">
-          {([
-            ["dash", "Panel", "M3 13h4v7H3v-7zM10 8h4v12h-4V8zM17 3h4v17h-4V3z"],
-            ["cal", "Calendario", "M4 6h16M7 3v4M17 3v4M5 5h14a1 1 0 011 1v13a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z"],
-            ["est", "Subir Estudios", "M9 15V5m0 0L5 9m4-4l4 4M4 17h16"],
-            ["wa", "WhatsApp", "M4 20l1.3-3.9A7.9 7.9 0 1112 20a7.9 7.9 0 01-4.1-1.1L4 20z"],
-          ] as const).map(([key, label, path]) => (
+          {NAV_VIEWS.map(([key, label, path]) => (
             <button
               key={key}
               onClick={() => setActiveView(key)}
@@ -1318,12 +1339,46 @@ export function OmegaDemo() {
           ))}
         </div>
 
+        {/* Mobile: current view as a dropdown trigger */}
+        <button
+          onClick={() => setNavOpen((o) => !o)}
+          className="md:hidden flex items-center gap-1.5 text-[13px] px-3 py-1.5 rounded-full font-semibold bg-[#f0faf7] text-[#1ab89a]"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+            <path d={activeViewMeta[2]} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          {activeViewMeta[1]}
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className={`transition-transform ${navOpen ? "rotate-180" : ""}`}>
+            <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+
         <button
           onClick={() => navigate("/omega")}
-          className="ml-auto text-[12.5px] font-medium text-[#5a7a76] border border-[#e8f0ef] px-3.5 py-1.5 rounded-lg hover:border-[#1ab89a] hover:text-[#1ab89a] transition-colors shrink-0"
+          className="ml-auto text-[12px] sm:text-[12.5px] font-medium text-[#5a7a76] border border-[#e8f0ef] px-2.5 sm:px-3.5 py-1.5 rounded-lg hover:border-[#1ab89a] hover:text-[#1ab89a] transition-colors shrink-0"
         >
-          Salir del demo
+          <span className="sm:hidden">Salir</span>
+          <span className="hidden sm:inline">Salir del demo</span>
         </button>
+
+        {navOpen && (
+          <div className="md:hidden absolute top-full left-0 right-0 bg-white border-b border-[#e8f0ef] shadow-[0_4px_16px_rgba(14,28,26,0.08)] p-2 z-20">
+            {NAV_VIEWS.map(([key, label, path]) => (
+              <button
+                key={key}
+                onClick={() => { setActiveView(key); setNavOpen(false); }}
+                className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[14px] font-medium transition-colors ${
+                  activeView === key ? "bg-[#f0faf7] text-[#1ab89a] font-semibold" : "text-[#5a7a76] hover:bg-[#f7f8f9]"
+                }`}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d={path} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
       </nav>
 
       {activeView === "cal" && <CalendarView />}
@@ -1332,8 +1387,8 @@ export function OmegaDemo() {
 
       {activeView === "dash" && (
       <div className="flex flex-1 min-h-0">
-        {/* SIDEBAR */}
-        <aside className="w-[300px] bg-white border-r border-[#e8f0ef] flex flex-col shrink-0">
+        {/* SIDEBAR — full-width pane on mobile (list/detail toggle), fixed column on desktop */}
+        <aside className={`${mobilePane === "detail" ? "hidden" : "flex"} md:flex w-full md:w-[300px] bg-white border-r border-[#e8f0ef] flex-col shrink-0`}>
           <div className="p-3.5 border-b border-[#e8f0ef]">
             <div className="relative">
               <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#8aada9]" width="14" height="14" viewBox="0 0 16 16" fill="none">
@@ -1359,7 +1414,7 @@ export function OmegaDemo() {
             {filtered.map((p) => (
               <button
                 key={p.id}
-                onClick={() => { setSelectedId(p.id); setActiveTab("Resumen"); }}
+                onClick={() => { setSelectedId(p.id); setActiveTab("Resumen"); setMobilePane("detail"); }}
                 className={`w-full flex items-center gap-2.5 pl-[11px] pr-3.5 py-2.5 border-l-[3px] text-left transition-colors ${
                   selectedId === p.id ? "bg-[#f0faf7] border-[#1ab89a]" : "border-transparent hover:bg-[#f7f8f9]"
                 }`}
@@ -1382,10 +1437,17 @@ export function OmegaDemo() {
         </aside>
 
         {/* MAIN */}
-        <main className="flex-1 overflow-y-auto">
+        <main className={`${mobilePane === "list" ? "hidden" : "block"} md:block flex-1 overflow-y-auto`}>
           {/* Patient header */}
-          <div className="bg-white border-b border-[#e8f0ef] px-7 py-5">
-            <div className="flex items-start justify-between">
+          <div className="bg-white border-b border-[#e8f0ef] px-4 sm:px-7 py-4 sm:py-5">
+            <button
+              onClick={() => setMobilePane("list")}
+              className="md:hidden flex items-center gap-1.5 text-sm text-[#5a7a76] hover:text-[#1ab89a] py-2 -mt-1 mb-1 transition-colors"
+            >
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              Pacientes
+            </button>
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
               <div className="flex items-center gap-4">
                 <div
                   className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-base shrink-0"
@@ -1433,7 +1495,7 @@ export function OmegaDemo() {
           </div>
 
           {/* Tab content */}
-          <div className="px-7 py-6">
+          <div className="px-4 sm:px-7 py-4 sm:py-6">
             {activeTab === "Resumen" && <ResumenTab patient={patient} />}
             {activeTab === "InBody" && <InBodyTab />}
             {activeTab === "Estudios" && <EstudiosTab />}
