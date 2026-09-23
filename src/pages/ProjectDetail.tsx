@@ -1,4 +1,4 @@
-import { Link, useParams } from 'react-router-dom'
+import { Link, Navigate, useParams } from 'react-router-dom'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { CalendlyButton } from '@/components/CalendlyButton'
 
@@ -6,6 +6,11 @@ export function ProjectDetail() {
   const { t } = useLanguage()
   const { slug } = useParams<{ slug: string }>()
   const project = t.projects.flagship.find((p) => p.slug === slug)
+
+  // Products with a real landing page use that instead of the generic case-study template.
+  if (project?.landingPath) {
+    return <Navigate to={project.landingPath} replace />
+  }
 
   if (!project) {
     return (

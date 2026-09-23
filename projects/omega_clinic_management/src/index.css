@@ -1,0 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
+@import 'tailwindcss';
+
+html, body, #root {
+  height: 100%;
+  background-color: #ffffff;
+  color: #0e1c1a;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+* { scrollbar-width: thin; scrollbar-color: #d0e8e4 transparent; }
