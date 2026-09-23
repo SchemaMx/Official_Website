@@ -240,16 +240,17 @@ export const en = {
       'We’re building our own products alongside client work. This is where we document that process in real time — with each one’s actual current status.',
     flagship: [
       {
-        slug: 'clinic-plus',
-        name: 'Clinic Plus',
-        nameNote: 'Working name',
+        slug: 'omega',
+        name: 'Omega Intelligent Clinic Management',
+        nameNote: 'Software for clinics (Spanish-language product)',
+        landingPath: '/omega',
         tagline: 'Patient management for bariatric and metabolic clinics.',
-        statusLabel: 'In development',
-        statusDetail: 'Backend is functional. Landing page and its own subdomain are still pending.',
+        statusLabel: 'Available for pilots',
+        statusDetail: 'Backend is functional, built with real clinics. Interactive demo and pricing are live.',
         problem:
-          'Bariatric and metabolic clinics track patient progress through recurring lab work and body-composition scales (InBody), but staff usually retype those values by hand from PDFs and printed tickets — slow, error-prone, and hard to turn into a clear view of a patient’s progress over time.',
+          'Bariatric and metabolic clinics track patient progress through recurring lab work and body-composition scales (InBody), but staff usually retype those values by hand from PDFs and printed tickets: slow, error-prone, and hard to turn into a clear view of a patient’s progress over time.',
         solution:
-          'Clinic Plus automatically reads lab report PDFs (several formats from Monterrey labs) and InBody scale tickets, and builds the patient record without manual entry. Patient communication happens directly over WhatsApp instead of manual calls and reminders.',
+          'Omega automatically reads lab report PDFs (several formats from Monterrey labs) and InBody scale tickets, and builds the patient record without manual entry. Patient communication happens directly over WhatsApp instead of manual calls and reminders.',
         scope: [
           'Patient records',
           'Automated lab report parsing (PDF)',

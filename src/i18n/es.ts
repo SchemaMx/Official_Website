@@ -242,16 +242,17 @@ export const es = {
       'Estamos construyendo nuestros propios productos además de trabajar con clientes. Aquí documentamos ese proceso en tiempo real — con el estado de avance real de cada uno.',
     flagship: [
       {
-        slug: 'clinic-plus',
-        name: 'Clinic Plus',
-        nameNote: 'Nombre de trabajo',
+        slug: 'omega',
+        name: 'Omega Gestionador de Clínica Inteligente',
+        nameNote: 'Software para clínicas',
+        landingPath: '/omega',
         tagline: 'Gestión de pacientes para clínicas de bariatría y metabolismo.',
-        statusLabel: 'En desarrollo',
-        statusDetail: 'Backend funcional. Landing page y subdominio propio todavía pendientes.',
+        statusLabel: 'Disponible para pilotos',
+        statusDetail: 'Backend funcional, construido con clínicas reales. Demo interactivo y precios disponibles.',
         problem:
-          'Las clínicas de bariatría y metabolismo dan seguimiento a sus pacientes a través de estudios de laboratorio recurrentes y básculas de composición corporal (InBody), pero el personal suele transcribir esos valores a mano desde PDFs y tickets impresos — lento, propenso a errores, y difícil de convertir en una vista clara del progreso del paciente en el tiempo.',
+          'Las clínicas de bariatría y metabolismo dan seguimiento a sus pacientes a través de estudios de laboratorio recurrentes y básculas de composición corporal (InBody), pero el personal suele transcribir esos valores a mano desde PDFs y tickets impresos: lento, propenso a errores, y difícil de convertir en una vista clara del progreso del paciente en el tiempo.',
         solution:
-          'Clinic Plus lee automáticamente los reportes de laboratorio en PDF (varios formatos de laboratorios de Monterrey) y los tickets de báscula InBody, y arma el expediente del paciente sin captura manual. La comunicación con el paciente ocurre directo por WhatsApp en lugar de llamadas y recordatorios manuales.',
+          'Omega lee automáticamente los reportes de laboratorio en PDF (varios formatos de laboratorios de Monterrey) y los tickets de báscula InBody, y arma el expediente del paciente sin captura manual. La comunicación con el paciente ocurre directo por WhatsApp en lugar de llamadas y recordatorios manuales.',
         scope: [
           'Expedientes de pacientes',
           'Lectura automática de estudios de laboratorio (PDF)',

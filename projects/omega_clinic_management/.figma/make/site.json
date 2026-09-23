@@ -1,0 +1,10 @@
+{
+  "description": "Streamline operations for medical clinics with a modern, user-friendly interface that enhances patient engagement and improves workflow efficiency.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

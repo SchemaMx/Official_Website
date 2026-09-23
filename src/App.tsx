@@ -8,6 +8,8 @@ import { Scope } from '@/pages/Scope'
 import { Team } from '@/pages/Team'
 import { Projects } from '@/pages/Projects'
 import { ProjectDetail } from '@/pages/ProjectDetail'
+import { OmegaLanding } from '@/pages/OmegaLanding'
+import { OmegaDemo } from '@/pages/OmegaDemo'
 import { Contact } from '@/pages/Contact'
 
 function DocumentMeta() {
@@ -35,13 +37,22 @@ function ScrollToTop() {
   return null
 }
 
-function AppShell() {
+// Omega is its own product with its own light-themed identity — it renders
+// standalone, without Schema's dark site chrome (whose light-on-dark nav
+// text would otherwise go nearly invisible against Omega's white pages).
+function StandaloneRoutes() {
+  return (
+    <Routes>
+      <Route path="/omega" element={<OmegaLanding />} />
+      <Route path="/omega/demo" element={<OmegaDemo />} />
+    </Routes>
+  )
+}
+
+function ChromedRoutes() {
   return (
     <div className="min-h-screen bg-ink text-white font-sans">
-      <DocumentMeta />
-      <ScrollToTop />
       <Nav />
-
       <main>
         <Routes>
           <Route path="/" element={<Home />} />
@@ -53,9 +64,21 @@ function AppShell() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
-
       <Footer />
     </div>
+  )
+}
+
+function AppShell() {
+  const { pathname } = useLocation()
+  const isStandalone = pathname.startsWith('/omega')
+
+  return (
+    <>
+      <DocumentMeta />
+      <ScrollToTop />
+      {isStandalone ? <StandaloneRoutes /> : <ChromedRoutes />}
+    </>
   )
 }
 

@@ -24,7 +24,7 @@ export function Projects() {
           {t.projects.flagship.map((p) => (
             <Link
               key={p.slug}
-              to={`/projects/${p.slug}`}
+              to={p.landingPath ?? `/projects/${p.slug}`}
               className="bg-card p-8 md:p-10 flex flex-col group hover:bg-[#111110] transition-colors duration-300"
             >
               <div className="flex items-start justify-between mb-8 gap-3">
