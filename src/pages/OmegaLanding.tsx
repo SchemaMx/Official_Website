@@ -7,6 +7,7 @@ type Lang = 'es' | 'en'
 type TourTab = { id: string; label: string; title: string; desc: string; items: string[] }
 type Tier = { name: string; price: string; cadence: string; intro: string; features: string[]; highlight?: boolean; cta: string }
 type WhyRow = { generic: string; omega: string }
+type HeroApt = { time: string; name: string; type: string; confirmed: boolean }
 
 type Content = {
   navProduct: string
@@ -19,10 +20,15 @@ type Content = {
   heroBody: string
   heroCtaPrimary: string
   heroCtaSecondary: string
-  cardEyebrow: string
-  cardBody1: string
-  cardBody2: string
-  cardBody3: string
+  heroCardTitle: string
+  heroCardDate: string
+  heroCardCount: string
+  heroCardApts: HeroApt[]
+  heroStatusConfirmed: string
+  heroStatusPending: string
+  heroBadgeTitle: string
+  heroBadgeSub: string
+  heroCardNote: string
   featuresEyebrow: string
   featuresTitle: string
   featuresSub: string
@@ -69,11 +75,20 @@ const CONTENT: Record<Lang, Content> = {
       'Omega Gestionador de Clínica Inteligente lee tus laboratorios y básculas InBody automáticamente, arma el expediente del paciente por ti, y confirma citas por WhatsApp sin que nadie tenga que llamar.',
     heroCtaPrimary: 'Probar demo interactivo',
     heroCtaSecondary: 'Agendar una llamada',
-    cardEyebrow: 'Hecho para clínicas reales',
-    cardBody1:
-      'Omega nace del trabajo directo con clínicas de bariatría y metabolismo en Monterrey: lee laboratorios, básculas InBody y automatiza WhatsApp sin captura manual.',
-    cardBody2: 'El demo interactivo usa datos ficticios para que puedas ver cómo se sentiría usarlo en tu día a día.',
-    cardBody3: '¿Tu especialidad es otra? Adaptamos Omega a la forma en que trabaja tu clínica.',
+    heroCardTitle: 'Agenda de hoy',
+    heroCardDate: 'Martes, 22 de septiembre',
+    heroCardCount: '4 citas',
+    heroCardApts: [
+      { time: '09:00', name: 'Ana Paola Ibarra', type: 'Seguimiento', confirmed: true },
+      { time: '10:30', name: 'Mitzy Gervacci Zazueta', type: 'Consulta inicial', confirmed: true },
+      { time: '11:30', name: 'Roberto Salinas', type: 'Revisión nutricional', confirmed: false },
+      { time: '14:00', name: 'Miguel Torres', type: 'Control de tratamiento', confirmed: true },
+    ],
+    heroStatusConfirmed: 'Confirmada',
+    heroStatusPending: 'Pendiente',
+    heroBadgeTitle: 'Confirmadas por WhatsApp',
+    heroBadgeSub: 'sin que tu equipo llame',
+    heroCardNote: 'Ejemplo ilustrativo con datos ficticios.',
     featuresEyebrow: 'Qué hace Omega',
     featuresTitle: 'Todo lo que hoy haces a mano, automatizado.',
     featuresSub: 'Diseñado a partir del trabajo real con clínicas de bariatría y metabolismo en Monterrey.',
@@ -224,11 +239,20 @@ const CONTENT: Record<Lang, Content> = {
       'Omega Intelligent Clinic Management automatically reads your lab work and InBody scales, builds the patient record for you, and confirms appointments over WhatsApp so nobody has to call.',
     heroCtaPrimary: 'Try the interactive demo',
     heroCtaSecondary: 'Book a call',
-    cardEyebrow: 'Built for real clinics',
-    cardBody1:
-      'Omega comes out of direct work with bariatric and metabolic clinics in Monterrey: it reads lab work, InBody scales, and automates WhatsApp without manual entry.',
-    cardBody2: 'The interactive demo uses fictional data so you can see what it would feel like to use it day to day.',
-    cardBody3: 'Different specialty? We adapt Omega to how your clinic works.',
+    heroCardTitle: "Today's schedule",
+    heroCardDate: 'Tuesday, 22 September',
+    heroCardCount: '4 appointments',
+    heroCardApts: [
+      { time: '09:00', name: 'Ana Paola Ibarra', type: 'Follow-up', confirmed: true },
+      { time: '10:30', name: 'Mitzy Gervacci Zazueta', type: 'Initial consultation', confirmed: true },
+      { time: '11:30', name: 'Roberto Salinas', type: 'Nutrition review', confirmed: false },
+      { time: '14:00', name: 'Miguel Torres', type: 'Treatment check-in', confirmed: true },
+    ],
+    heroStatusConfirmed: 'Confirmed',
+    heroStatusPending: 'Pending',
+    heroBadgeTitle: 'Confirmed over WhatsApp',
+    heroBadgeSub: 'without your team calling',
+    heroCardNote: 'Illustrative example with fictional data.',
     featuresEyebrow: 'What Omega does',
     featuresTitle: 'Everything you do by hand today, automated.',
     featuresSub: 'Designed from real work with bariatric and metabolic clinics in Monterrey.',
@@ -490,11 +514,63 @@ export function OmegaLanding() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-[#e8f0ef] bg-[#f8fefe] p-6 sm:p-8">
-            <p className="text-xs font-semibold text-[#1ab89a] tracking-widest uppercase mb-4">{t.cardEyebrow}</p>
-            <p className="text-[#0e1c1a] text-base leading-relaxed mb-4">{t.cardBody1}</p>
-            <p className="text-[#5a7a76] text-sm leading-relaxed mb-4">{t.cardBody2}</p>
-            <p className="text-[#5a7a76] text-sm leading-relaxed">{t.cardBody3}</p>
+          {/* Product snapshot: the day's agenda with WhatsApp confirmation states,
+              mirroring what the app actually shows. */}
+          <div>
+            <div className="relative">
+            <div className="rounded-2xl border border-[#e8f0ef] bg-white shadow-[0_4px_24px_rgba(14,28,26,0.06)] p-5 sm:p-6">
+              <div className="flex items-start justify-between gap-3 mb-5">
+                <div>
+                  <p className="text-xs text-[#8aada9] mb-0.5">{t.heroCardTitle}</p>
+                  <p className="text-[15px] font-bold text-[#0e1c1a]">{t.heroCardDate}</p>
+                </div>
+                <span className="shrink-0 text-[11px] font-medium bg-[#f0faf7] text-[#1ab89a] px-2.5 py-1 rounded-full whitespace-nowrap">
+                  {t.heroCardCount}
+                </span>
+              </div>
+
+              <div className="flex flex-col">
+                {t.heroCardApts.map((a) => (
+                  <div
+                    key={a.time}
+                    className="flex items-center gap-3 sm:gap-4 py-3 border-b border-[#f0f8f6] last:border-0"
+                  >
+                    <span
+                      className="text-[12px] font-semibold text-[#1ab89a] shrink-0"
+                      style={{ fontFamily: "'DM Mono', monospace" }}
+                    >
+                      {a.time}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[13.5px] font-semibold text-[#0e1c1a] truncate leading-tight">{a.name}</p>
+                      <p className="text-[11.5px] text-[#8aada9] truncate mt-0.5">{a.type}</p>
+                    </div>
+                    <span
+                      className={`shrink-0 text-[10.5px] font-medium px-2.5 py-1 rounded-full whitespace-nowrap ${
+                        a.confirmed ? 'bg-[#f0faf7] text-[#1ab89a]' : 'bg-[#f7f8f9] text-[#8aada9]'
+                      }`}
+                    >
+                      {a.confirmed ? t.heroStatusConfirmed : t.heroStatusPending}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-3 lg:mt-0 lg:absolute lg:-bottom-6 lg:-left-6 flex items-center gap-3 bg-white border border-[#e8f0ef] rounded-2xl shadow-[0_8px_24px_rgba(14,28,26,0.10)] px-4 py-3">
+              <span className="w-8 h-8 rounded-lg bg-[#f0faf7] text-[#1ab89a] flex items-center justify-center shrink-0">
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+                  <path d="M3 8.5l3.5 3.5L13 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </span>
+              <div className="leading-tight">
+                <p className="text-[13px] font-semibold text-[#0e1c1a]">{t.heroBadgeTitle}</p>
+                <p className="text-[11.5px] text-[#8aada9]">{t.heroBadgeSub}</p>
+              </div>
+            </div>
+
+            </div>
+            <p className="text-[11px] text-[#c8ddd9] mt-3 lg:mt-10 lg:text-center">{t.heroCardNote}</p>
           </div>
         </div>
       </section>
