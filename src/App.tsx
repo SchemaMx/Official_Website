@@ -89,7 +89,7 @@ function ChromedRoutes() {
   )
 }
 
-function AppShell() {
+export function AppShell() {
   const { pathname } = useLocation()
   const isStandalone = pathname.startsWith('/omega')
 
