@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { OmegaContactForm } from '@/components/OmegaContactForm'
+import { CalendlyButton } from '@/components/CalendlyButton'
 
 type Lang = 'es' | 'en'
 
@@ -542,9 +542,6 @@ export function OmegaLanding() {
               <a href={contactHref} className="border border-[#d0e8e4] text-[#0e1c1a] px-7 py-3.5 rounded-full font-medium text-sm hover:border-[#1ab89a] hover:text-[#1ab89a] transition-colors">
                 {t.heroCtaSecondary}
               </a>
-              <a href="#contacto" className="px-2 py-3.5 text-sm font-medium text-[#137c69] underline underline-offset-4">
-                {lang === 'es' ? 'Quiero que me contacten' : 'Have your team contact me'}
-              </a>
             </div>
           </div>
 
@@ -797,8 +794,6 @@ export function OmegaLanding() {
         </div>
       </section>
 
-      <OmegaContactForm lang={lang} contactHref={contactHref} />
-
       {/* CTA */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
         <div className="bg-[#0e1c1a] rounded-2xl px-6 sm:px-10 py-10 sm:py-14 text-center relative overflow-hidden">
@@ -820,9 +815,9 @@ export function OmegaLanding() {
               >
                 {t.ctaPrimary}
               </Link>
-              <a href={contactHref} className="border border-white/20 text-white px-8 py-3.5 rounded-full font-medium text-sm hover:border-white/40 transition-colors">
+              <CalendlyButton className="border border-white/20 text-white px-8 py-3.5 rounded-full font-medium text-sm hover:border-white/40 transition-colors">
                 {t.ctaSecondary}
-              </a>
+              </CalendlyButton>
             </div>
           </div>
         </div>
