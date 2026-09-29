@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { CalendlyButton } from '@/components/CalendlyButton'
+import { OmegaContactForm } from '@/components/OmegaContactForm'
 
 type Lang = 'es' | 'en'
 
@@ -60,6 +60,8 @@ type Content = {
   ctaPrimary: string
   ctaSecondary: string
   footerCredit: string
+  emailSubject: string
+  emailBody: string
 }
 
 const CONTENT: Record<Lang, Content> = {
@@ -74,7 +76,7 @@ const CONTENT: Record<Lang, Content> = {
     heroBody:
       'Omega Gestionador de Clínica Inteligente lee tus laboratorios y básculas InBody automáticamente, arma el expediente del paciente por ti, y confirma citas por WhatsApp sin que nadie tenga que llamar.',
     heroCtaPrimary: 'Probar demo interactivo',
-    heroCtaSecondary: 'Agendar una llamada',
+    heroCtaSecondary: 'Solicitar demo por correo',
     heroCardTitle: 'Agenda de hoy',
     heroCardDate: 'Martes, 22 de septiembre',
     heroCardCount: '4 citas',
@@ -226,6 +228,20 @@ const CONTENT: Record<Lang, Content> = {
     ctaPrimary: 'Probar demo interactivo',
     ctaSecondary: 'Hablar con nosotros',
     footerCredit: 'Un producto construido por Schema',
+    emailSubject: 'Solicitud de demo de Omega',
+    emailBody: [
+      'Hola, equipo de Schema:',
+      '',
+      'Estamos interesados en una demostración de Omega para conocer la plataforma y cómo puede ayudarnos a gestionar nuestra clínica.',
+      '',
+      'Nos gustaría conocer sus funcionalidades, los planes disponibles y los pasos para comenzar. ¿Podrían contactarnos para coordinar una demo?',
+      '',
+      'Nombre: ',
+      'Clínica: ',
+      'Teléfono (opcional): ',
+      '',
+      '¡Gracias! Quedamos atentos a su respuesta.',
+    ].join('\r\n'),
   },
   en: {
     navProduct: 'Product',
@@ -238,7 +254,7 @@ const CONTENT: Record<Lang, Content> = {
     heroBody:
       'Omega Intelligent Clinic Management automatically reads your lab work and InBody scales, builds the patient record for you, and confirms appointments over WhatsApp so nobody has to call.',
     heroCtaPrimary: 'Try the interactive demo',
-    heroCtaSecondary: 'Book a call',
+    heroCtaSecondary: 'Request a demo by email',
     heroCardTitle: "Today's schedule",
     heroCardDate: 'Tuesday, 22 September',
     heroCardCount: '4 appointments',
@@ -390,6 +406,20 @@ const CONTENT: Record<Lang, Content> = {
     ctaPrimary: 'Try the interactive demo',
     ctaSecondary: 'Talk to us',
     footerCredit: 'A product built by Schema',
+    emailSubject: 'Omega demo request',
+    emailBody: [
+      'Hello Schema team,',
+      '',
+      'We are interested in a demo of Omega to learn more about the platform and how it can help us manage our clinic.',
+      '',
+      'We would like to learn about its features, available plans, and how to get started. Could you contact us to arrange a demo?',
+      '',
+      'Name: ',
+      'Clinic: ',
+      'Phone (optional): ',
+      '',
+      'Thank you! We look forward to hearing from you.',
+    ].join('\r\n'),
   },
 }
 
@@ -409,6 +439,7 @@ function OmegaLogo({ className = '' }: { className?: string }) {
 export function OmegaLanding() {
   const [lang, setLang] = useState<Lang>('es')
   const t = CONTENT[lang]
+  const contactHref = `mailto:hola@schema.mx?subject=${encodeURIComponent(t.emailSubject)}&body=${encodeURIComponent(t.emailBody)}`
   const [activeTour, setActiveTour] = useState(0)
   const tour = t.tour[activeTour]
   const [menuOpen, setMenuOpen] = useState(false)
@@ -508,9 +539,12 @@ export function OmegaLanding() {
               >
                 {t.heroCtaPrimary}
               </Link>
-              <CalendlyButton className="border border-[#d0e8e4] text-[#0e1c1a] px-7 py-3.5 rounded-full font-medium text-sm hover:border-[#1ab89a] hover:text-[#1ab89a] transition-colors">
+              <a href={contactHref} className="border border-[#d0e8e4] text-[#0e1c1a] px-7 py-3.5 rounded-full font-medium text-sm hover:border-[#1ab89a] hover:text-[#1ab89a] transition-colors">
                 {t.heroCtaSecondary}
-              </CalendlyButton>
+              </a>
+              <a href="#contacto" className="px-2 py-3.5 text-sm font-medium text-[#137c69] underline underline-offset-4">
+                {lang === 'es' ? 'Quiero que me contacten' : 'Have your team contact me'}
+              </a>
             </div>
           </div>
 
@@ -747,7 +781,8 @@ export function OmegaLanding() {
                     </li>
                   ))}
                 </ul>
-                <CalendlyButton
+                <a
+                  href={contactHref}
                   className={`w-full text-center px-5 py-3 rounded-full font-semibold text-sm transition-colors ${
                     tier.highlight
                       ? 'bg-[#1ab89a] text-white hover:bg-[#13a389]'
@@ -755,12 +790,14 @@ export function OmegaLanding() {
                   }`}
                 >
                   {tier.cta}
-                </CalendlyButton>
+                </a>
               </div>
             ))}
           </div>
         </div>
       </section>
+
+      <OmegaContactForm lang={lang} contactHref={contactHref} />
 
       {/* CTA */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
@@ -783,9 +820,9 @@ export function OmegaLanding() {
               >
                 {t.ctaPrimary}
               </Link>
-              <CalendlyButton className="border border-white/20 text-white px-8 py-3.5 rounded-full font-medium text-sm hover:border-white/40 transition-colors">
+              <a href={contactHref} className="border border-white/20 text-white px-8 py-3.5 rounded-full font-medium text-sm hover:border-white/40 transition-colors">
                 {t.ctaSecondary}
-              </CalendlyButton>
+              </a>
             </div>
           </div>
         </div>
