@@ -16,14 +16,19 @@ type LanguageContextValue = {
 
 const LanguageContext = createContext<LanguageContextValue | null>(null)
 
-function getInitialLanguage(): Language {
-  if (typeof window === 'undefined') return 'es'
-  const stored = window.localStorage.getItem(STORAGE_KEY)
-  return stored === 'en' || stored === 'es' ? stored : 'es'
-}
-
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguageState] = useState<Language>(getInitialLanguage)
+  // Always start on the prerendered default so the first client render matches
+  // the server-rendered HTML; a stored preference is applied right after.
+  const [language, setLanguageState] = useState<Language>('es')
+
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(STORAGE_KEY)
+      if (stored === 'en' || stored === 'es') setLanguageState(stored)
+    } catch {
+      // localStorage unavailable (private mode) - stay on the default
+    }
+  }, [])
 
   useEffect(() => {
     document.documentElement.lang = language

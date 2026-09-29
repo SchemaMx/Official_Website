@@ -8,3 +8,4 @@ dist
 
 # Original Figma Make scaffold, kept locally as a design reference only
 /figma
+dist-ssr
