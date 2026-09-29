@@ -105,9 +105,14 @@ const ROUTES = [
 const esc = (s) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
+// Pages serves directory indexes, so /omega 301s to /omega/. Point canonical and
+// og:url at the trailing-slash form that actually answers 200, so crawlers don't
+// have to reconcile a canonical that redirects.
+const canonicalize = (p) => (p ? `${ORIGIN}/${p}/` : `${ORIGIN}/`)
+
 function buildHtml(shell, { path, meta, jsonld, canonical }, body) {
-  const url = `${ORIGIN}/${path}`
-  const canonicalUrl = `${ORIGIN}/${canonical ?? path}`
+  const url = canonicalize(path)
+  const canonicalUrl = canonicalize(canonical ?? path)
   const head = [
     `<meta property="og:type" content="website" />`,
     `<meta property="og:site_name" content="Schema" />`,
@@ -155,7 +160,7 @@ const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${ROUTES.filter((r) => r.sitemap !== false).map(
   (r) => `  <url>
-    <loc>${ORIGIN}/${r.path}</loc>
+    <loc>${canonicalize(r.path)}</loc>
     <lastmod>${TODAY}</lastmod>
     <priority>${r.priority}</priority>
   </url>`
