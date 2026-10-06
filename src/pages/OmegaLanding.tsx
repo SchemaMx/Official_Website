@@ -29,6 +29,11 @@ type Content = {
   heroBadgeTitle: string
   heroBadgeSub: string
   heroCardNote: string
+  videoEyebrow: string
+  videoTitle: string
+  videoSub: string
+  videoPlayLabel: string
+  videoDuration: string
   featuresEyebrow: string
   featuresTitle: string
   featuresSub: string
@@ -91,6 +96,11 @@ const CONTENT: Record<Lang, Content> = {
     heroBadgeTitle: 'Confirmadas por WhatsApp',
     heroBadgeSub: 'sin que tu equipo llame',
     heroCardNote: 'Ejemplo ilustrativo con datos ficticios.',
+    videoEyebrow: 'Mira Omega en acción',
+    videoTitle: 'Un recorrido completo, en menos de 7 minutos.',
+    videoSub: 'Te mostramos cómo se ve el expediente, la lectura automática de laboratorios e InBody, las calculadoras de riesgo y la automatización por WhatsApp, con el sistema funcionando.',
+    videoPlayLabel: 'Reproducir recorrido',
+    videoDuration: '6:33 min',
     featuresEyebrow: 'Qué hace Omega',
     featuresTitle: 'Todo lo que hoy haces a mano, automatizado.',
     featuresSub: 'Diseñado a partir del trabajo real con clínicas de bariatría y metabolismo en Monterrey.',
@@ -269,6 +279,11 @@ const CONTENT: Record<Lang, Content> = {
     heroBadgeTitle: 'Confirmed over WhatsApp',
     heroBadgeSub: 'without your team calling',
     heroCardNote: 'Illustrative example with fictional data.',
+    videoEyebrow: 'See Omega in action',
+    videoTitle: 'A full walkthrough, in under 7 minutes.',
+    videoSub: 'We show you the patient record, automatic lab and InBody reading, the clinical risk calculators and WhatsApp automation, with the system actually running.',
+    videoPlayLabel: 'Play the walkthrough',
+    videoDuration: '6:33 min',
     featuresEyebrow: 'What Omega does',
     featuresTitle: 'Everything you do by hand today, automated.',
     featuresSub: 'Designed from real work with bariatric and metabolic clinics in Monterrey.',
@@ -421,6 +436,77 @@ const CONTENT: Record<Lang, Content> = {
       'Thank you! We look forward to hearing from you.',
     ].join('\r\n'),
   },
+}
+
+// Paste the YouTube video id here (the part after ?v= ). Unlisted videos work
+// fine. Leave empty and the video section simply doesn't render.
+// Also drives the VideoObject schema in scripts/prerender.mjs.
+export const VIDEO_ID = '_c4QmzOqnhY'
+export const VIDEO_UPLOAD_DATE = '2026-10-06'
+export const VIDEO_DURATION_ISO = 'PT6M33S'
+
+// Click-to-load facade: shows YouTube's thumbnail and only mounts the real
+// iframe once someone presses play, so the page doesn't pay ~1MB of player JS
+// (or set YouTube's cookies) for visitors who never watch.
+function VideoPlayer({ playLabel, duration, title }: { playLabel: string; duration: string; title: string }) {
+  const [playing, setPlaying] = useState(false)
+
+  if (playing) {
+    return (
+      <div className="relative w-full rounded-2xl overflow-hidden bg-black" style={{ aspectRatio: '16 / 9' }}>
+        <iframe
+          className="absolute inset-0 w-full h-full"
+          // rel=0 keeps end-screen suggestions within the same channel. Note there is
+          // no parameter that hides the channel name or the "Watch on YouTube" link
+          // (modestbranding was deprecated in 2023), so whichever account uploads the
+          // video is what doctors see here. Upload from an Omega/Schema brand account.
+          src={`https://www.youtube-nocookie.com/embed/${VIDEO_ID}?autoplay=1&rel=0`}
+          title={title}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      </div>
+    )
+  }
+
+  return (
+    <button
+      onClick={() => setPlaying(true)}
+      aria-label={playLabel}
+      className="group relative w-full rounded-2xl overflow-hidden bg-[#0e1c1a] block"
+      style={{ aspectRatio: '16 / 9' }}
+    >
+      {/* maxresdefault is the sharp 16:9 still, but YouTube only generates it once HD
+          processing finishes and not for every upload. Fall back to hqdefault, whose
+          4:3 letterboxing object-cover crops back to exactly the 16:9 frame. */}
+      <img
+        src={`https://i.ytimg.com/vi/${VIDEO_ID}/maxresdefault.jpg`}
+        onError={(e) => {
+          const img = e.currentTarget
+          if (img.dataset.fallback) return
+          img.dataset.fallback = '1'
+          img.src = `https://i.ytimg.com/vi/${VIDEO_ID}/hqdefault.jpg`
+        }}
+        alt=""
+        loading="lazy"
+        className="absolute inset-0 w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity"
+      />
+      <span className="absolute inset-0 bg-gradient-to-t from-[#0e1c1a]/70 via-transparent to-transparent" />
+      <span className="absolute inset-0 flex items-center justify-center">
+        <span className="flex items-center gap-3 bg-white/95 backdrop-blur-sm rounded-full pl-5 pr-6 py-3.5 shadow-[0_8px_30px_rgba(0,0,0,0.25)] group-hover:scale-105 transition-transform">
+          <span className="w-9 h-9 rounded-full bg-[#1ab89a] flex items-center justify-center shrink-0">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <path d="M4 2.5l7 4.5-7 4.5V2.5z" fill="white" />
+            </svg>
+          </span>
+          <span className="text-left leading-tight">
+            <span className="block text-[14px] font-semibold text-[#0e1c1a]">{playLabel}</span>
+            <span className="block text-[11.5px] text-[#8aada9]">{duration}</span>
+          </span>
+        </span>
+      </span>
+    </button>
+  )
 }
 
 function OmegaLogo({ className = '' }: { className?: string }) {
@@ -605,6 +691,20 @@ export function OmegaLanding() {
           </div>
         </div>
       </section>
+
+      {/* VIDEO WALKTHROUGH */}
+      {VIDEO_ID && (
+        <section className="border-t border-[#e8f0ef]" id="video">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
+            <div className="text-center mb-8 sm:mb-10">
+              <p className="text-xs font-semibold text-[#1ab89a] tracking-widest uppercase mb-3">{t.videoEyebrow}</p>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0e1c1a] mb-3">{t.videoTitle}</h2>
+              <p className="text-[#5a7a76] text-sm leading-relaxed font-light max-w-xl mx-auto">{t.videoSub}</p>
+            </div>
+            <VideoPlayer playLabel={t.videoPlayLabel} duration={t.videoDuration} title={t.videoTitle} />
+          </div>
+        </section>
+      )}
 
       {/* WHAT IT DOES */}
       <section className="border-y border-[#e8f0ef] bg-[#f8fefe]">

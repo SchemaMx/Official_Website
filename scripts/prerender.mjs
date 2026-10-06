@@ -16,7 +16,9 @@ const DIST = 'dist'
 const ORIGIN = 'https://schema.mx'
 const TODAY = new Date().toISOString().slice(0, 10)
 
-const { render } = await import(pathToFileURL(join(process.cwd(), 'dist-ssr/entry-server.js')).href)
+const { render, VIDEO_ID, VIDEO_UPLOAD_DATE, VIDEO_DURATION_ISO } = await import(
+  pathToFileURL(join(process.cwd(), 'dist-ssr/entry-server.js')).href
+)
 
 const SCHEMA = {
   title: 'Schema | Data & AI',
@@ -83,6 +85,21 @@ const OMEGA_JSONLD = {
     category: 'Suscripción mensual',
     url: `${ORIGIN}/omega#precios`,
   })),
+}
+
+if (VIDEO_ID) {
+  OMEGA_JSONLD.video = {
+    '@type': 'VideoObject',
+    name: 'Recorrido completo de Omega Gestionador de Clínica Inteligente',
+    description:
+      'Recorrido por el expediente del paciente, la lectura automática de laboratorios e InBody, las calculadoras de riesgo clínico y la automatización por WhatsApp.',
+    thumbnailUrl: `https://i.ytimg.com/vi/${VIDEO_ID}/maxresdefault.jpg`,
+    embedUrl: `https://www.youtube-nocookie.com/embed/${VIDEO_ID}`,
+    uploadDate: VIDEO_UPLOAD_DATE,
+    duration: VIDEO_DURATION_ISO,
+    inLanguage: 'es-MX',
+    publisher: ORGANIZATION,
+  }
 }
 
 const SCHEMA_JSONLD = { '@context': 'https://schema.org', ...ORGANIZATION }

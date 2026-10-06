@@ -15,3 +15,7 @@ export function render(url: string): string {
     </LanguageProvider>,
   )
 }
+
+// Re-exported so the prerender script can build VideoObject schema from the
+// same constants the page uses, rather than duplicating the video id.
+export { VIDEO_ID, VIDEO_UPLOAD_DATE, VIDEO_DURATION_ISO } from '@/pages/OmegaLanding'

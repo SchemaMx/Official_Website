@@ -1,0 +1,31 @@
+import { chromium } from 'playwright';
+const dir='/private/tmp/claude-501/-Users-daviddrums-Personal-Projects-schema-Official-Website/e37dc7e6-e0df-484a-b00b-9b37f01db18c/scratchpad';
+const b = await chromium.launch();
+const errs=[];
+const p = await b.newPage({ viewport:{width:1280,height:900} });
+p.on('pageerror',e=>errs.push(e.message));
+await p.goto('http://localhost:5173/omega',{waitUntil:'networkidle'});
+await p.getByText('Mira Omega en acción').scrollIntoViewIfNeeded();
+await p.waitForTimeout(2500);
+// which thumbnail actually ended up loading?
+const info = await p.evaluate(()=>{
+  const img=document.querySelector('#video img');
+  return img ? { src: img.currentSrc||img.src, w: img.naturalWidth, h: img.naturalHeight } : null;
+});
+console.log('poster:', info.src.split('/').pop(), `${info.w}x${info.h}`, info.w>0?'loaded ✓':'BROKEN ✗');
+await p.screenshot({path:`${dir}/real-video-desktop.png`});
+await p.getByRole('button',{name:/Reproducir recorrido/}).click();
+await p.waitForTimeout(3000);
+const fr = p.frameLocator('iframe[src*="youtube-nocookie"]');
+console.log('iframe mounted:', await p.locator('iframe[src*="youtube-nocookie"]').count()===1 ? 'yes ✓':'no ✗');
+await p.screenshot({path:`${dir}/real-video-playing.png`});
+await p.close();
+const m = await b.newPage({ viewport:{width:390,height:844} });
+m.on('pageerror',e=>errs.push(e.message));
+await m.goto('http://localhost:5173/omega',{waitUntil:'networkidle'});
+await m.getByText('Mira Omega en acción').scrollIntoViewIfNeeded();
+await m.waitForTimeout(2000);
+await m.screenshot({path:`${dir}/real-video-mobile.png`});
+console.log('mobile overflow:', await m.evaluate(()=>document.documentElement.scrollWidth>document.documentElement.clientWidth));
+await m.close(); await b.close();
+console.log('errors:', errs.length?errs.join('|'):'none');
