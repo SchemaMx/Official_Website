@@ -1,30 +1,35 @@
-import { useState, type ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState, type ReactNode } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { DEMO_T, DemoTContext, useT, isDemoLang, type DemoLang, type DemoDict } from "./omegaDemoI18n";
 
-const TABS = [
-  "Resumen", "Antecedentes", "Signos Vitales", "InBody",
-  "Estudios", "Riesgo", "Plan", "Nutrición", "Act. Física", "Seguimiento",
-];
-
-const DOCTORS = ["Dra. Elena Reyes", "Dr. Mauricio Solís", "Dra. Camila Torres"];
-
+// Language-neutral patient records. Display name, gender and condition are
+// resolved from the active dictionary so the roster reads natively per language.
 const PATIENTS = [
-  { id: 1, initials: "DL", name: "Debany Montserrat Luevano Contreras", age: 29, gender: "Femenino", bmi: 30.9, condition: "Obesidad I", medication: "Wegovy", doctor: DOCTORS[0] },
-  { id: 2, initials: "MG", name: "Mitzy Lilian Gervacci Zazueta", age: 34, gender: "Femenino", bmi: 27.4, condition: "Sobrepeso", medication: "Saxenda", doctor: DOCTORS[1] },
-  { id: 3, initials: "SM", name: "Silvia Alejandra Martínez Villa", age: 38, gender: "Femenino", bmi: 25.1, condition: "Normal", medication: "Sin tratamiento", doctor: DOCTORS[2] },
-  { id: 4, initials: "EM", name: "Eduar Yossimar Martínez Flores", age: 39, gender: "Masculino", bmi: 28.8, condition: "Sobrepeso", medication: "Ozempic", doctor: DOCTORS[0] },
-  { id: 5, initials: "SB", name: "Sergio Javier Bustamante García", age: 54, gender: "Masculino", bmi: 32.1, condition: "Obesidad I", medication: "Mounjaro", doctor: DOCTORS[1] },
-  { id: 6, initials: "MB", name: "Martha Patricia Balderas García", age: 53, gender: "Femenino", bmi: 31.4, condition: "Obesidad I", medication: "Wegovy", doctor: DOCTORS[0] },
-  { id: 7, initials: "VL", name: "Valeria Guadalupe Leos Palomo", age: 46, gender: "Femenino", bmi: 29.3, condition: "Sobrepeso", medication: "Sin tratamiento", doctor: DOCTORS[2] },
-  { id: 8, initials: "LL", name: "Leticia Lagunes Ortiz", age: 42, gender: "Femenino", bmi: 26.8, condition: "Sobrepeso", medication: "Saxenda", doctor: DOCTORS[1] },
-  { id: 9, initials: "AC", name: "Alan Alejandro Charles Salas", age: 27, gender: "Masculino", bmi: 24.2, condition: "Normal", medication: "Sin tratamiento", doctor: DOCTORS[0] },
-  { id: 10, initials: "DA", name: "Diana Laura Arredondo Castillo", age: 29, gender: "Femenino", bmi: 28.0, condition: "Sobrepeso", medication: "Ozempic", doctor: DOCTORS[2] },
-  { id: 11, initials: "AS", name: "Adriana Charbel Sosa Ramírez", age: 30, gender: "Femenino", bmi: 30.2, condition: "Obesidad I", medication: "Wegovy", doctor: DOCTORS[1] },
-  { id: 12, initials: "CC", name: "Consuelo Margarita Cortez Sanchez", age: 29, gender: "Femenino", bmi: 31.8, condition: "Obesidad I", medication: "Mounjaro", doctor: DOCTORS[0] },
+  { id: 1, age: 29, sex: "F", bmi: 30.9, cond: "obesity1", medication: "Wegovy", doctorIdx: 0 },
+  { id: 2, age: 34, sex: "F", bmi: 27.4, cond: "overweight", medication: "Saxenda", doctorIdx: 1 },
+  { id: 3, age: 38, sex: "F", bmi: 25.1, cond: "normal", medication: "", doctorIdx: 2 },
+  { id: 4, age: 39, sex: "M", bmi: 28.8, cond: "overweight", medication: "Ozempic", doctorIdx: 0 },
+  { id: 5, age: 54, sex: "M", bmi: 32.1, cond: "obesity1", medication: "Mounjaro", doctorIdx: 1 },
+  { id: 6, age: 53, sex: "F", bmi: 31.4, cond: "obesity1", medication: "Wegovy", doctorIdx: 0 },
+  { id: 7, age: 46, sex: "F", bmi: 29.3, cond: "overweight", medication: "", doctorIdx: 2 },
+  { id: 8, age: 42, sex: "F", bmi: 26.8, cond: "overweight", medication: "Saxenda", doctorIdx: 1 },
+  { id: 9, age: 27, sex: "M", bmi: 24.2, cond: "normal", medication: "", doctorIdx: 0 },
+  { id: 10, age: 29, sex: "F", bmi: 28.0, cond: "overweight", medication: "Ozempic", doctorIdx: 2 },
+  { id: 11, age: 30, sex: "F", bmi: 30.2, cond: "obesity1", medication: "Wegovy", doctorIdx: 1 },
+  { id: 12, age: 29, sex: "F", bmi: 31.8, cond: "obesity1", medication: "Mounjaro", doctorIdx: 0 },
 ];
 
-function avatarGradient(gender: string) {
-  return gender === "Masculino"
+type Patient = (typeof PATIENTS)[0];
+const condLabel = (d: DemoDict, c: string) =>
+  c === "normal" ? d.condNormal : c === "overweight" ? d.condOverweight : d.condObesity1;
+const patientName = (d: DemoDict, p: Patient) => d.patientNames[p.id - 1];
+const patientInitials = (d: DemoDict, p: Patient) =>
+  patientName(d, p).split(' ').slice(0, 2).map((w) => w[0]).join('').toUpperCase();
+const genderLabel = (d: DemoDict, p: Patient) => (p.sex === "M" ? d.genderM : d.genderF);
+const medLabel = (d: DemoDict, p: Patient) => p.medication || d.noTreatment;
+
+function avatarGradient(sex: string) {
+  return sex === "M"
     ? "linear-gradient(135deg, #3ab8c8, #6b7ff5)"
     : "linear-gradient(135deg, #1ab89a, #3ab8c8)";
 }
@@ -50,20 +55,20 @@ const FUERZA_DATA = [
 ];
 
 const BODY_METRIC_SERIES: Record<string, { date: string; value: number }[]> = {
-  "% Grasa": [{ date: "13 ago", value: 45.8 }, { date: "29 ago", value: 45.1 }, { date: "5 sep", value: 44.5 }],
-  "Agua": [{ date: "13 ago", value: 32.8 }, { date: "29 ago", value: 33.2 }, { date: "5 sep", value: 33.6 }],
-  "Masa grasa": [{ date: "13 ago", value: 36.9 }, { date: "29 ago", value: 36.1 }, { date: "5 sep", value: 35.4 }],
-  "Masa músculo": [{ date: "13 ago", value: 23.6 }, { date: "29 ago", value: 23.9 }, { date: "5 sep", value: 24.1 }],
-  "Masa magra": [{ date: "13 ago", value: 43.3 }, { date: "29 ago", value: 43.7 }, { date: "5 sep", value: 44.1 }],
+  "metricFat": [{ date: "13 ago", value: 45.8 }, { date: "29 ago", value: 45.1 }, { date: "5 sep", value: 44.5 }],
+  "metricWater": [{ date: "13 ago", value: 32.8 }, { date: "29 ago", value: 33.2 }, { date: "5 sep", value: 33.6 }],
+  "metricFatMass": [{ date: "13 ago", value: 36.9 }, { date: "29 ago", value: 36.1 }, { date: "5 sep", value: 35.4 }],
+  "metricMuscleMass": [{ date: "13 ago", value: 23.6 }, { date: "29 ago", value: 23.9 }, { date: "5 sep", value: 24.1 }],
+  "metricLeanMass": [{ date: "13 ago", value: 43.3 }, { date: "29 ago", value: 43.7 }, { date: "5 sep", value: 44.1 }],
 };
 
 const INBODY_METRICS = [
-  { label: "Masa grasa", value: "35.4 kg", ref: "18–28 kg", status: "high" },
-  { label: "Masa muscular", value: "24.1 kg", ref: "21–31 kg", status: "ok" },
-  { label: "Agua corporal", value: "33.6 L", ref: "29–38 L", status: "ok" },
-  { label: "Masa magra", value: "44.1 kg", ref: "39–53 kg", status: "ok" },
-  { label: "Grasa visceral", value: "18", ref: "< 10", status: "high" },
-  { label: "Fuerza relativa", value: "0.31", ref: "> 0.40", status: "low" },
+  { label: "metricFatMass" as const, value: "35.4 kg", ref: "18–28 kg", status: "high" },
+  { label: "skeletalMuscle" as const, value: "24.1 kg", ref: "21–31 kg", status: "ok" },
+  { label: "bodyWater" as const, value: "33.6 L", ref: "29–38 L", status: "ok" },
+  { label: "leanMass" as const, value: "44.1 kg", ref: "39–53 kg", status: "ok" },
+  { label: "visceralFat" as const, value: "18", ref: "< 10", status: "high" },
+  { label: "relativeStrength" as const, value: "0.31", ref: "> 0.40", status: "low" },
 ];
 
 const INBODY_RECORDS = [
@@ -72,17 +77,17 @@ const INBODY_RECORDS = [
 ];
 
 const LAB_GROUPS = [
-  { title: "METABÓLICO", values: [["Glucosa", "95.1", "mg/dL"], ["Insulina", "12.6", "µU/mL"], ["HOMA-IR", "2.96", ""], ["Ác. Úrico", "3.6", "mg/dL"]] },
-  { title: "LÍPIDOS", values: [["Col. Total", "187.9", "mg/dL"], ["HDL", "74.7", "mg/dL"], ["LDL", "101.7", "mg/dL"], ["Col. No-HDL", "113.2", "mg/dL"], ["VLDL", "10.74", "mg/dL"], ["Triglicéridos", "53.7", "mg/dL"]] },
-  { title: "HEPÁTICO", values: [["AST/TGO", "20", "U/L"], ["ALT/TGP", "28.6", "U/L"], ["GGT", "15", "U/L"], ["Fosfatasa Alc.", "77", "U/L"], ["DHL (LDH)", "110", "U/L"], ["Bili. Total", "0.29", "mg/dL"]] },
-  { title: "PROTEÍNAS", values: [["Albúmina", "4.19", "g/dL"], ["Globulinas", "2.32", "g/dL"], ["Proteínas Tot.", "6.5", "g/dL"]] },
-  { title: "RENAL Y ELECTROLITOS", values: [["Urea", "34.3", "mg/dL"], ["Creatinina", "0.93", "mg/dL"], ["Sodio", "144", "mEq/L"], ["Potasio", "4.7", "mEq/L"], ["Calcio", "9.2", "mg/dL"]] },
+  { titleKey: "labMetabolic" as const, values: [["Glucosa", "95.1", "mg/dL"], ["Insulina", "12.6", "µU/mL"], ["HOMA-IR", "2.96", ""], ["Ác. Úrico", "3.6", "mg/dL"]] },
+  { titleKey: "labLipids" as const, values: [["Col. Total", "187.9", "mg/dL"], ["HDL", "74.7", "mg/dL"], ["LDL", "101.7", "mg/dL"], ["Col. No-HDL", "113.2", "mg/dL"], ["VLDL", "10.74", "mg/dL"], ["Triglicéridos", "53.7", "mg/dL"]] },
+  { titleKey: "labHepatic" as const, values: [["AST/TGO", "20", "U/L"], ["ALT/TGP", "28.6", "U/L"], ["GGT", "15", "U/L"], ["Fosfatasa Alc.", "77", "U/L"], ["DHL (LDH)", "110", "U/L"], ["Bili. Total", "0.29", "mg/dL"]] },
+  { titleKey: "labProteins" as const, values: [["Albúmina", "4.19", "g/dL"], ["Globulinas", "2.32", "g/dL"], ["Proteínas Tot.", "6.5", "g/dL"]] },
+  { titleKey: "labRenal" as const, values: [["Urea", "34.3", "mg/dL"], ["Creatinina", "0.93", "mg/dL"], ["Sodio", "144", "mEq/L"], ["Potasio", "4.7", "mEq/L"], ["Calcio", "9.2", "mg/dL"]] },
 ];
 
 const VITALS = [
-  { label: "Presión arterial", value: "118/76", unit: "mmHg", ok: true },
-  { label: "Frecuencia cardíaca", value: "74", unit: "bpm", ok: true },
-  { label: "Saturación O₂", value: "98", unit: "%", ok: true },
+  { label: "bloodPressure" as const, value: "118/76", unit: "mmHg", ok: true },
+  { label: "heartRate" as const, value: "74", unit: "bpm", ok: true },
+  { label: "o2sat" as const, value: "98", unit: "%", ok: true },
 ];
 
 const VITALS_HISTORY = [
@@ -107,9 +112,9 @@ function Pill({ children, tone = "gray", icon }: { children: ReactNode; tone?: "
   );
 }
 
-function conditionTone(condition: string): "teal" | "amber" | "red" {
-  if (condition === "Normal") return "teal";
-  if (condition === "Sobrepeso") return "amber";
+function conditionTone(cond: string): "teal" | "amber" | "red" {
+  if (cond === "normal") return "teal";
+  if (cond === "overweight") return "amber";
   return "red";
 }
 
@@ -249,6 +254,7 @@ function ZoneProgressBar({ current, initial, goal }: { current: number; initial:
 
 // Grasa vs Músculo scatter-on-axis chart, matching the real app's two-dot % view
 function ScatterAxisChart({ fat, muscle, date }: { fat: number; muscle: number; date: string }) {
+  const t = useT();
   const W = 260, H = 140, PADL = 32, PADT = 16, PADB = 22;
   const yMax = 50;
   const y = (v: number) => PADT + ((yMax - v) / yMax) * (H - PADT - PADB);
@@ -270,10 +276,10 @@ function ScatterAxisChart({ fat, muscle, date }: { fat: number; muscle: number; 
       </svg>
       <div className="flex justify-center gap-4 mt-1">
         <span className="flex items-center gap-1.5 text-[11px] text-[#8aada9]">
-          <span className="w-2.5 h-2.5 rounded-full bg-[#e85555] inline-block" /> % Grasa <b className="text-[#0e1c1a]">{fat}%</b>
+          <span className="w-2.5 h-2.5 rounded-full bg-[#e85555] inline-block" /> {t.metricFat} <b className="text-[#0e1c1a]">{fat}%</b>
         </span>
         <span className="flex items-center gap-1.5 text-[11px] text-[#8aada9]">
-          <span className="w-2.5 h-2.5 rounded-full bg-[#6b7ff5] inline-block" /> % Músculo <b className="text-[#0e1c1a]">{muscle}%</b>
+          <span className="w-2.5 h-2.5 rounded-full bg-[#6b7ff5] inline-block" /> {t.metricMuscleMass} <b className="text-[#0e1c1a]">{muscle}%</b>
         </span>
       </div>
     </div>
@@ -287,17 +293,18 @@ function StatusDot({ status }: { status: string }) {
 
 // ── TAB CONTENT COMPONENTS ──────────────────────────────────────────────────
 
-function ResumenTab({ patient }: { patient: typeof PATIENTS[0] }) {
+function ResumenTab({ patient }: { patient: Patient }) {
+  const t = useT();
   const [panelOpen, setPanelOpen] = useState(true);
-  const [metric, setMetric] = useState("% Grasa");
+  const [metric, setMetric] = useState("metricFat");
 
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {[
-          { label: "Peso inicial", value: "81.0 kg", sub: "primer registro · InBody inicial", accent: false },
-          { label: "Peso actual", value: "79.5 kg", sub: `IMC ${patient.bmi}`, accent: false },
-          { label: "Meta", value: "65 kg", sub: "faltan 14.5 kg", accent: true },
+          { label: t.initialWeight, value: "81.0 kg", sub: t.firstRecord, accent: false },
+          { label: t.currentWeight, value: "79.5 kg", sub: `${t.bmi} ${patient.bmi}`, accent: false },
+          { label: t.goal, value: "65 kg", sub: `${t.remaining} 14.5 kg`, accent: true },
         ].map((m) => (
           <div key={m.label} className={`rounded-2xl border p-5 ${m.accent ? "border-[#1ab89a]/30 bg-[#f0faf7]" : "border-[#e8f0ef] bg-white shadow-[0_1px_2px_rgba(14,28,26,0.04)]"}`}>
             <p className="text-xs text-[#8aada9] mb-1">{m.label}</p>
@@ -307,22 +314,22 @@ function ResumenTab({ patient }: { patient: typeof PATIENTS[0] }) {
         ))}
       </div>
 
-      <CollapsibleBar open={panelOpen} onToggle={() => setPanelOpen((o) => !o)} openLabel="Cerrar panel" closedLabel="Ver panel de tendencias" icon />
+      <CollapsibleBar open={panelOpen} onToggle={() => setPanelOpen((o) => !o)} openLabel={t.closePanel} closedLabel={t.openPanel} icon />
 
       {panelOpen && (
         <div className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="rounded-2xl border border-[#e8f0ef] bg-white shadow-[0_1px_2px_rgba(14,28,26,0.04)] p-5">
-              <p className="text-xs font-semibold text-[#0e1c1a] mb-2">Evolución de peso</p>
+              <p className="text-xs font-semibold text-[#0e1c1a] mb-2">{t.weightEvolution}</p>
               <AxisChart data={WEIGHT_DATA} suffix=" kg" />
-              <p className="text-[10px] text-[#c8ddd9] mt-1">consultas · vitales · InBody</p>
+              <p className="text-[10px] text-[#c8ddd9] mt-1">{t.weightSources}</p>
             </div>
             <div className="rounded-2xl border border-[#e8f0ef] bg-white shadow-[0_1px_2px_rgba(14,28,26,0.04)] p-5">
-              <p className="text-xs font-semibold text-[#0e1c1a] mb-4">Progreso a meta</p>
+              <p className="text-xs font-semibold text-[#0e1c1a] mb-4">{t.goalProgress}</p>
               <ZoneProgressBar current={79.5} initial={81.0} goal={65} />
             </div>
             <div className="rounded-2xl border border-[#e8f0ef] bg-white shadow-[0_1px_2px_rgba(14,28,26,0.04)] p-5">
-              <p className="text-xs font-semibold text-[#0e1c1a] mb-2">Grasa vs Músculo</p>
+              <p className="text-xs font-semibold text-[#0e1c1a] mb-2">{t.fatVsMuscle}</p>
               <ScatterAxisChart fat={44.5} muscle={24.1} date="5 sep 2026" />
             </div>
           </div>
@@ -337,24 +344,24 @@ function ResumenTab({ patient }: { patient: typeof PATIENTS[0] }) {
                     metric === m ? "bg-[#1ab89a] text-white border-[#1ab89a] font-medium" : "border-[#e8f0ef] text-[#8aada9] hover:text-[#1ab89a] hover:border-[#1ab89a]/40"
                   }`}
                 >
-                  {m}
+                  {t[m as keyof typeof t] as string}
                 </button>
               ))}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <AxisChart data={BODY_METRIC_SERIES[metric]} suffix={metric === "% Grasa" ? "%" : " kg"} color="#e85555" />
+                <AxisChart data={BODY_METRIC_SERIES[metric]} suffix={metric === "metricFat" ? "%" : " kg"} color="#e85555" />
                 <p className="text-[10px] text-[#c8ddd9] text-center -mt-2">InBody</p>
               </div>
               <div>
-                <p className="text-xs font-semibold text-[#0e1c1a] mb-1">Grasa visceral</p>
+                <p className="text-xs font-semibold text-[#0e1c1a] mb-1">{t.visceralFat}</p>
                 <AxisChart data={VISCERAL_DATA} decimals={0} color="#e8960c" />
-                <p className="text-[10px] text-[#c8ddd9] text-center -mt-2">InBody · nivel de grasa visceral</p>
+                <p className="text-[10px] text-[#c8ddd9] text-center -mt-2">{t.visceralSource}</p>
               </div>
               <div>
-                <p className="text-xs font-semibold text-[#0e1c1a] mb-1">Fuerza relativa</p>
+                <p className="text-xs font-semibold text-[#0e1c1a] mb-1">{t.relativeStrength}</p>
                 <AxisChart data={FUERZA_DATA} decimals={2} color="#6b7ff5" />
-                <p className="text-[10px] text-[#c8ddd9] text-center -mt-2">dinamometría ÷ peso corporal</p>
+                <p className="text-[10px] text-[#c8ddd9] text-center -mt-2">{t.strengthSource}</p>
               </div>
             </div>
           </div>
@@ -362,28 +369,32 @@ function ResumenTab({ patient }: { patient: typeof PATIENTS[0] }) {
       )}
 
       <SectionCard
-        title="Resumen clínico con IA"
+        title={t.aiSummary}
         action={<Pill tone="teal" icon={<svg width="10" height="10" viewBox="0 0 14 14" fill="none"><path d="M2.5 7l3 3 6-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}>Actualizado</Pill>}
       >
         <div className="rounded-xl bg-[#f0f4ff] border border-[#e8f0ef] p-4 text-sm text-[#0e1c1a] leading-relaxed space-y-3">
           <div>
-            <p className="text-[#5b6ee8] font-semibold text-[13px] mb-1">Resumen clínico</p>
+            <p className="text-[#5b6ee8] font-semibold text-[13px] mb-1">{t.clinicalSummary}</p>
             <p className="text-[#3a4650]">
-              Paciente {patient.gender === "Femenino" ? "femenina" : "masculino"} de {patient.age} años con IMC de {patient.bmi} kg/m², clasificada en {patient.condition.toLowerCase()}.
-              Actualmente en tratamiento con {patient.medication === "Sin tratamiento" ? "manejo no farmacológico" : patient.medication}, con buena tolerancia hasta el momento.
-              La composición corporal más reciente muestra un porcentaje de grasa de 44.5% y grasa visceral en 18, relevantes para el manejo metabólico.
+              {t.summaryBody({
+                gender: genderLabel(t, patient),
+                age: patient.age,
+                bmi: patient.bmi,
+                condition: condLabel(t, patient.cond),
+                medication: medLabel(t, patient),
+              })}
             </p>
           </div>
           <div>
-            <p className="text-[#5b6ee8] font-semibold text-[13px] mb-1">Problemas identificados</p>
+            <p className="text-[#5b6ee8] font-semibold text-[13px] mb-1">{t.identifiedProblems}</p>
             <ol className="list-decimal list-inside text-[#3a4650] space-y-0.5">
-              <li>{patient.condition}</li>
-              <li>Resistencia a la insulina (HOMA-IR elevado)</li>
-              <li>Grasa visceral elevada</li>
+              <li>{condLabel(t, patient.cond)}</li>
+              <li>{t.problemInsulin}</li>
+              <li>{t.problemVisceral}</li>
             </ol>
           </div>
           <div>
-            <p className="text-[#5b6ee8] font-semibold text-[13px] mb-1">Consideraciones para el tratamiento</p>
+            <p className="text-[#5b6ee8] font-semibold text-[13px] mb-1">{t.treatmentConsiderations}</p>
             <p className="text-[#3a4650]">
               Continuar seguimiento de tolerancia al tratamiento farmacológico actual y reforzar plan de actividad física para mejorar composición corporal.
             </p>
@@ -395,43 +406,44 @@ function ResumenTab({ patient }: { patient: typeof PATIENTS[0] }) {
 }
 
 function AntecedentesTab() {
+  const t = useT();
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <SectionCard title="Datos personales">
-          <LabelValueRow label="Fecha de nacimiento" value="14 mar 1996 (29 años)" />
-          <LabelValueRow label="Estado civil" value="Soltera" />
-          <LabelValueRow label="Ocupación" value="Diseñadora" />
-          <LabelValueRow label="Teléfono" value="8112456789" />
-          <LabelValueRow label="Correo" value="debany.luevano@hotmail.com" />
-          <LabelValueRow label="Ciudad" value="Monterrey, Nuevo León" />
-          <LabelValueRow label="Grupo sanguíneo" value="O+" />
+        <SectionCard title={t.personalData}>
+          <LabelValueRow label={t.birthDate} value={t.birthDateValue} />
+          <LabelValueRow label={t.maritalStatus} value={t.maritalValue} />
+          <LabelValueRow label={t.occupation} value={t.occupationValue} />
+          <LabelValueRow label={t.phone} value="8112456789" />
+          <LabelValueRow label={t.email} value={t.patientEmail} />
+          <LabelValueRow label={t.city} value={t.cityValue} />
+          <LabelValueRow label={t.bloodType} value="O+" />
         </SectionCard>
-        <SectionCard title="Medidas antropométricas">
-          <LabelValueRow label="Peso inicial" value="81.0 kg" />
-          <LabelValueRow label="Peso actual" value="79.5 kg" />
-          <LabelValueRow label="Talla" value="162.0 cm" />
-          <LabelValueRow label="IMC" value="30.9 kg/m²" />
-          <LabelValueRow label="Cintura" value="89 cm" />
-          <LabelValueRow label="Cadera" value="108.5 cm" />
-          <LabelValueRow label="Cuello" value="36.5 cm" />
-          <LabelValueRow label="Peso máximo" value="86 kg" />
-          <LabelValueRow label="Peso mínimo" value="63 kg" />
+        <SectionCard title={t.anthropometrics}>
+          <LabelValueRow label={t.initialWeight} value="81.0 kg" />
+          <LabelValueRow label={t.currentWeight} value="79.5 kg" />
+          <LabelValueRow label={t.height} value="162.0 cm" />
+          <LabelValueRow label={t.bmi} value="30.9 kg/m²" />
+          <LabelValueRow label={t.waist} value="89 cm" />
+          <LabelValueRow label={t.hip} value="108.5 cm" />
+          <LabelValueRow label={t.neck} value="36.5 cm" />
+          <LabelValueRow label={t.maxWeight} value="86 kg" />
+          <LabelValueRow label={t.minWeight} value="63 kg" />
         </SectionCard>
       </div>
 
-      <SectionCard title="Comorbilidades">
+      <SectionCard title={t.comorbidities}>
         <div className="flex flex-wrap gap-2">
           <Pill tone="amber">Resistencia a la insulina</Pill>
           <Pill tone="amber">Dislipidemia mixta</Pill>
         </div>
       </SectionCard>
 
-      <SectionCard title="Cirugía bariátrica previa">
-        <p className="text-sm text-[#8aada9]">Ninguna registrada</p>
+      <SectionCard title={t.priorSurgery}>
+        <p className="text-sm text-[#8aada9]">{t.noneRegistered}</p>
       </SectionCard>
 
-      <SectionCard title="Intentos de pérdida de peso con medicamentos">
+      <SectionCard title={t.weightLossAttempts}>
         <ul className="space-y-1.5">
           <li className="flex items-start gap-2 text-sm text-[#5a7a76]">
             <span className="w-1 h-1 rounded-full bg-[#1ab89a]/60 mt-2 shrink-0" />
@@ -448,25 +460,26 @@ function AntecedentesTab() {
 }
 
 function SignosTab() {
+  const t = useT();
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="rounded-2xl border border-[#e8f0ef] bg-white shadow-[0_1px_2px_rgba(14,28,26,0.04)] p-5">
-          <p className="text-[11px] font-semibold text-[#8aada9] uppercase tracking-wide mb-2">Dinamometría (fuerza de prensión)</p>
+          <p className="text-[11px] font-semibold text-[#8aada9] uppercase tracking-wide mb-2">{t.dynamometry}</p>
           <p className="text-2xl font-bold text-[#0e1c1a]">26.5 <span className="text-sm font-normal text-[#8aada9]">kg</span></p>
         </div>
         <div className="rounded-2xl border border-[#e8f0ef] bg-white shadow-[0_1px_2px_rgba(14,28,26,0.04)] p-5">
-          <p className="text-[11px] font-semibold text-[#8aada9] uppercase tracking-wide mb-2">Fuerza relativa</p>
+          <p className="text-[11px] font-semibold text-[#8aada9] uppercase tracking-wide mb-2">{t.relativeStrength}</p>
           <p className="text-2xl font-bold text-[#0e1c1a]">0.4 <span className="text-sm font-normal text-[#8aada9]">kg/kg</span></p>
         </div>
         <div className="rounded-2xl border border-[#e8f0ef] bg-white shadow-[0_1px_2px_rgba(14,28,26,0.04)] p-5">
-          <p className="text-[11px] font-semibold text-[#8aada9] uppercase tracking-wide mb-2">Sentadillas 30s (fuerza de piernas)</p>
+          <p className="text-[11px] font-semibold text-[#8aada9] uppercase tracking-wide mb-2">{t.squats}</p>
           <p className="text-2xl font-bold text-[#0e1c1a]">20 <span className="text-sm font-normal text-[#8aada9]">reps</span></p>
           <p className="text-[11px] text-[#c8ddd9] mt-1">corte &lt; 12 reps (edad/sexo)</p>
         </div>
       </div>
 
-      <SectionCard title="Nueva toma de signos vitales">
+      <SectionCard title={t.newVitals}>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-7 gap-3 mb-4">
           {[["TAS", "114", "mmHg"], ["TAD", "76", "mmHg"], ["F.C.", "71", "lpm"], ["SAT O₂", "98", "%"], ["PESO", "79.5", "kg"], ["DINAMOMETRÍA", "26.5", "kg"], ["SENTADILLAS 30S", "20", "reps"]].map(([label, val, unit]) => (
             <div key={label} className="rounded-lg border border-[#e8f0ef] bg-[#f7f8f9] px-3 py-2">
@@ -483,7 +496,7 @@ function SignosTab() {
           <span>IMC: <b className="text-[#0e1c1a]">30.9</b></span>
           <span>Fuerza rel.: <b className="text-[#0e1c1a]">0.4</b></span>
         </div>
-        <button className="text-[13px] font-semibold text-white bg-[#1ab89a] px-4 py-2 rounded-full hover:bg-[#13a389] transition-colors">+ Registrar toma</button>
+        <button className="text-[13px] font-semibold text-white bg-[#1ab89a] px-4 py-2 rounded-full hover:bg-[#13a389] transition-colors">{t.registerVitals}</button>
       </SectionCard>
 
       <SectionCard title={`Historial — ${VITALS_HISTORY.length} tomas`}>
@@ -512,13 +525,14 @@ function SignosTab() {
 }
 
 function InBodyTab() {
+  const t = useT();
   const [selected, setSelected] = useState<number | null>(null);
 
   if (selected === null) {
     return (
       <SectionCard
-        title="Análisis InBody"
-        action={<button className="text-[12px] font-semibold text-white bg-[#1ab89a] px-3.5 py-1.5 rounded-full hover:bg-[#13a389] transition-colors">+ Subir PDF</button>}
+        title={t.inbodyAnalysis}
+        action={<button className="text-[12px] font-semibold text-white bg-[#1ab89a] px-3.5 py-1.5 rounded-full hover:bg-[#13a389] transition-colors">{t.uploadPdf}</button>}
       >
         <div className="space-y-2">
           {INBODY_RECORDS.map((r, i) => (
@@ -555,13 +569,13 @@ function InBodyTab() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="rounded-2xl border border-[#e8f0ef] bg-white shadow-[0_1px_2px_rgba(14,28,26,0.04)] p-5">
-          <p className="text-[11px] font-semibold text-[#8aada9] uppercase tracking-wide mb-3">Reporte InBody original</p>
+          <p className="text-[11px] font-semibold text-[#8aada9] uppercase tracking-wide mb-3">{t.originalReport}</p>
           <div className="rounded-xl border border-[#e8f0ef] bg-[#fcfcfc] p-4" style={{ fontFamily: "'DM Mono', monospace" }}>
             <p className="text-[13px] font-bold text-[#e85555] mb-2">InBody <span className="text-[#0e1c1a]">[InBody370S]</span></p>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[9.5px] text-[#8aada9] mb-3 pb-2 border-b border-[#e8f0ef]">
-              <span>ID {r.folio}</span><span>Edad 29</span><span>Género F</span><span>{r.date}</span>
+              <span>ID {r.folio}</span><span>{t.age} 29</span><span>{t.gender} F</span><span>{r.date}</span>
             </div>
-            {[["Agua corporal", 60], ["Proteínas", 45], ["Minerales", 38], ["Masa magra", 70], ["Peso", 55]].map(([label, w]) => (
+            {([[t.bodyWater, 60], [t.proteins, 45], [t.minerals, 38], [t.leanMass, 70], [t.weight, 55]] as const).map(([label, w]) => (
               <div key={label as string} className="flex items-center gap-2 mb-1.5">
                 <span className="text-[9.5px] text-[#5a7a76] w-24 shrink-0">{label}</span>
                 <div className="flex-1 h-2 rounded-full bg-[#eef1f4] overflow-hidden">
@@ -576,7 +590,7 @@ function InBodyTab() {
           <div className="rounded-2xl border border-[#e8f0ef] bg-white shadow-[0_1px_2px_rgba(14,28,26,0.04)] p-5 flex items-center justify-between">
             <div>
               <p className="text-3xl font-bold text-[#e8960c]">{r.score}</p>
-              <p className="text-[10px] text-[#8aada9]">Puntuación InBody</p>
+              <p className="text-[10px] text-[#8aada9]">{t.inbodyScore}</p>
             </div>
             <div className="text-right">
               <p className="text-[13px] font-semibold text-[#0e1c1a]">{r.date}</p>
@@ -584,21 +598,21 @@ function InBodyTab() {
             </div>
           </div>
 
-          <SectionCard title="Composición corporal">
+          <SectionCard title={t.bodyComposition}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
-              <LabelValueRow label="Peso" value={r.peso} />
-              <LabelValueRow label="% Grasa corporal" value={r.grasa} />
-              <LabelValueRow label="Masa muscular esq." value={r.mme} />
-              <LabelValueRow label="IMC" value={r.imc} />
+              <LabelValueRow label={t.weight} value={r.peso} />
+              <LabelValueRow label={t.bodyFatPct} value={r.grasa} />
+              <LabelValueRow label={t.skeletalMuscle} value={r.mme} />
+              <LabelValueRow label={t.bmi} value={r.imc} />
             </div>
           </SectionCard>
 
-          <SectionCard title="Parámetros de investigación">
+          <SectionCard title={t.researchParams}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
-              <LabelValueRow label="Grasa visceral" value="18" />
-              <LabelValueRow label="Relación cintura/cadera" value="0.87" />
+              <LabelValueRow label={t.visceralFat} value="18" />
+              <LabelValueRow label={t.waistHipRatio} value="0.87" />
               <LabelValueRow label="TMB" value="1310 kcal" />
-              <LabelValueRow label="Calorías recomendadas" value="1650 kcal" />
+              <LabelValueRow label={t.recommendedCalories} value="1650 kcal" />
             </div>
           </SectionCard>
         </div>
@@ -608,16 +622,17 @@ function InBodyTab() {
 }
 
 function EstudiosTab() {
+  const t = useT();
   const [selected, setSelected] = useState(false);
 
   if (!selected) {
     return (
       <SectionCard
-        title="1 estudio(s) · del más reciente al más antiguo"
+        title={`1 ${t.studiesCount}`}
         action={
           <div className="flex gap-2">
-            <button className="text-[12px] font-medium text-[#5a7a76] border border-[#e8f0ef] px-3 py-1.5 rounded-full hover:border-[#1ab89a] hover:text-[#1ab89a] transition-colors">Añadir hallazgo</button>
-            <button className="text-[12px] font-semibold text-white bg-[#1ab89a] px-3.5 py-1.5 rounded-full hover:bg-[#13a389] transition-colors">+ Añadir estudio</button>
+            <button className="text-[12px] font-medium text-[#5a7a76] border border-[#e8f0ef] px-3 py-1.5 rounded-full hover:border-[#1ab89a] hover:text-[#1ab89a] transition-colors">{t.addFinding}</button>
+            <button className="text-[12px] font-semibold text-white bg-[#1ab89a] px-3.5 py-1.5 rounded-full hover:bg-[#13a389] transition-colors">{t.addStudy}</button>
           </div>
         }
       >
@@ -625,15 +640,15 @@ function EstudiosTab() {
           <div className="flex items-start justify-between gap-3 mb-2">
             <div>
               <p className="text-sm font-semibold text-[#0e1c1a]">3 sep 2026</p>
-              <p className="text-xs text-[#8aada9]">Laboratorio Clínico San Rafael · 39 valores</p>
+              <p className="text-xs text-[#8aada9]">{t.labName} · 39 {t.valuesCount}</p>
             </div>
-            <span className="text-xs text-[#1ab89a] font-medium shrink-0">Ver detalle →</span>
+            <span className="text-xs text-[#1ab89a] font-medium shrink-0">{t.viewDetail}</span>
           </div>
           <div className="flex flex-wrap gap-1.5">
-            {["Glucosa: 95.1 mg/dL", "Col. Total: 187.9 mg/dL", "HDL: 74.7 mg/dL", "LDL: 101.7 mg/dL", "Triglicéridos: 53.7 mg/dL", "AST/TGO: 20 U/L"].map((c) => (
+            {[`${t.labNames["Glucosa"]}: 95.1 mg/dL`, `${t.labNames["Col. Total"]}: 187.9 mg/dL`, "HDL: 74.7 mg/dL", "LDL: 101.7 mg/dL", `${t.labNames["Triglicéridos"]}: 53.7 mg/dL`, "AST/TGO: 20 U/L"].map((c) => (
               <span key={c} className="text-[11px] text-[#5a7a76] bg-[#f7f8f9] border border-[#e8f0ef] rounded-full px-2.5 py-1">{c}</span>
             ))}
-            <span className="text-[11px] text-[#8aada9] px-2.5 py-1">+28 más</span>
+            <span className="text-[11px] text-[#8aada9] px-2.5 py-1">+28 {t.more}</span>
           </div>
         </button>
       </SectionCard>
@@ -649,29 +664,29 @@ function EstudiosTab() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="rounded-2xl border border-[#e8f0ef] bg-white shadow-[0_1px_2px_rgba(14,28,26,0.04)] p-5">
-          <p className="text-[11px] font-semibold text-[#8aada9] uppercase tracking-wide mb-3">Documento original</p>
+          <p className="text-[11px] font-semibold text-[#8aada9] uppercase tracking-wide mb-3">{t.originalDocument}</p>
           <div className="rounded-xl border border-[#e8f0ef] bg-[#fcfcfc] p-4" style={{ fontFamily: "'DM Mono', monospace" }}>
-            <p className="text-[12px] font-bold text-[#1ab89a] mb-2">LABORATORIO DE ANÁLISIS CLÍNICOS</p>
+            <p className="text-[12px] font-bold text-[#1ab89a] mb-2">{t.labHeader}</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 text-[9.5px] text-[#8aada9] mb-3 pb-2 border-b border-[#e8f0ef]">
               <span>Folio: 264652000114</span><span>Fecha: 3 sep 2026</span>
               <span>Paciente: expediente activo</span><span>Sexo: F</span>
             </div>
             {LAB_GROUPS[0].values.map(([label, val, unit]) => (
               <div key={label} className="flex justify-between text-[10px] text-[#5a7a76] py-0.5">
-                <span>{label}</span><span>{val} {unit}</span>
+                <span>{t.labNames[label] ?? label}</span><span>{val} {unit}</span>
               </div>
             ))}
           </div>
         </div>
 
-        <SectionCard title="Resultados" action={<button className="text-[12px] text-[#1ab89a] font-medium">Editar valores</button>}>
+        <SectionCard title={t.results} action={<button className="text-[12px] text-[#1ab89a] font-medium">{t.editValues}</button>}>
           <div className="space-y-4">
             {LAB_GROUPS.map((g) => (
-              <div key={g.title}>
-                <p className="text-[10.5px] font-semibold text-[#8aada9] uppercase tracking-wide mb-2">{g.title}</p>
+              <div key={g.titleKey}>
+                <p className="text-[10.5px] font-semibold text-[#8aada9] uppercase tracking-wide mb-2">{t[g.titleKey]}</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
                   {g.values.map(([label, val, unit]) => (
-                    <LabelValueRow key={label} label={label} value={`${val} ${unit}`} />
+                    <LabelValueRow key={label} label={t.labNames[label] ?? label} value={`${val} ${unit}`} />
                   ))}
                 </div>
               </div>
@@ -697,17 +712,18 @@ function RiskCard({ label, value, note, status }: { label: string; value: string
 }
 
 function RiesgoTab() {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [eoss, setEoss] = useState("2");
 
   return (
     <div className="space-y-4">
-      <SectionCard title="Panel de riesgo — resumen">
+      <SectionCard title={t.riskPanel}>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
           <RiskCard label="IMC kg/m²" value={String(30.9)} note="Obesidad I" status="mod" />
           <RiskCard label="Riesgo CV Framingham" value="8%" note="Bajo (<10%)" status="ok" />
           <RiskCard label="STOP-BANG" value="2/8" note="Riesgo bajo SAOS" status="ok" />
-          <RiskCard label="Synd. Metabólico" value="2/5" note="Componentes presentes" status="mod" />
+          <RiskCard label={t.metabolicSyndrome} value="2/5" note="Componentes presentes" status="mod" />
           <RiskCard label="FINDRISC DM2" value="14 pts" note="Moderado (~17%)" status="mod" />
           <RiskCard label="Fat Liver Index" value="68" note="Esteatosis probable" status="high" />
           <RiskCard label="NAFLD Fibrosis Score" value="0.2" note="Fibrosis poco probable" status="ok" />
@@ -718,12 +734,12 @@ function RiesgoTab() {
         </p>
       </SectionCard>
 
-      <CollapsibleBar open={open} onToggle={() => setOpen((o) => !o)} openLabel="Cerrar desglose" closedLabel="Desglose de riesgos · ver detalle" icon />
+      <CollapsibleBar open={open} onToggle={() => setOpen((o) => !o)} openLabel={t.closeBreakdown} closedLabel={t.openBreakdown} icon />
 
       {open && (
         <div className="space-y-4">
           <SectionCard
-            title="Edmonton Obesity Staging System (EOSS)"
+            title={t.eossTitle}
             action={<Pill tone="amber">Sugerido · confirmar {`E${eoss}`}</Pill>}
           >
             <div className="flex items-center gap-4">
@@ -744,20 +760,20 @@ function RiesgoTab() {
             </p>
           </SectionCard>
 
-          <SectionCard title="Resistencia a la insulina y adiposidad">
+          <SectionCard title={t.insulinAdiposity}>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <RiskCard label="HOMA-IR" value="3.2" note="HOMA-IR elevado (>2.5)" status="high" />
-              <RiskCard label="Índice TyG" value="4.7" note="Sin IR (<4.9)" status="ok" />
-              <RiskCard label="Índice VAI" value="2.1" note="Adiposidad visceral elevada" status="mod" />
+              <RiskCard label={t.tygLabel} value="4.7" note="Sin IR (<4.9)" status="ok" />
+              <RiskCard label={t.vaiLabel} value="2.1" note="Adiposidad visceral elevada" status="mod" />
             </div>
           </SectionCard>
 
-          <SectionCard title="Sarcopenia — tamizaje (EWGSOP2)" action={<Pill tone="teal">SARC-F: 1/10 · Bajo riesgo</Pill>}>
+          <SectionCard title={t.sarcopeniaScreen} action={<Pill tone="teal">SARC-F: 1/10 · Bajo riesgo</Pill>}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6">
-              <LabelValueRow label="Fuerza (cargar 4.5 kg)" value="Ninguna · 0" />
-              <LabelValueRow label="Caminar (cruzar cuarto)" value="Ninguna · 0" />
-              <LabelValueRow label="Levantarse silla/cama" value="Alguna · 1" />
-              <LabelValueRow label="Subir 10 escalones" value="Ninguna · 0" />
+              <LabelValueRow label={t.sarcStrength} value="Ninguna · 0" />
+              <LabelValueRow label={t.sarcWalk} value="Ninguna · 0" />
+              <LabelValueRow label={t.sarcChair} value="Alguna · 1" />
+              <LabelValueRow label={t.sarcStairs} value="Ninguna · 0" />
             </div>
           </SectionCard>
         </div>
@@ -767,6 +783,7 @@ function RiesgoTab() {
 }
 
 function PlanTab() {
+  const t = useT();
   const DOSE_DATA = [
     { date: "13 ago", value: 0.25 },
     { date: "29 ago", value: 0.5 },
@@ -776,35 +793,35 @@ function PlanTab() {
     <div className="space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         <div className="rounded-2xl border border-[#e8f0ef] bg-white shadow-[0_1px_2px_rgba(14,28,26,0.04)] p-5">
-          <p className="text-xs text-[#8aada9] mb-1">Peso inicial</p>
+          <p className="text-xs text-[#8aada9] mb-1">{t.initialWeight}</p>
           <p className="text-xl font-bold text-[#0e1c1a]">81.0 <span className="text-sm font-normal text-[#8aada9]">kg</span></p>
         </div>
         <div className="rounded-2xl border border-[#e8f0ef] bg-white shadow-[0_1px_2px_rgba(14,28,26,0.04)] p-5">
-          <p className="text-xs text-[#8aada9] mb-1">Peso actual</p>
+          <p className="text-xs text-[#8aada9] mb-1">{t.currentWeight}</p>
           <p className="text-xl font-bold text-[#0e1c1a]">79.5 <span className="text-sm font-normal text-[#8aada9]">kg</span></p>
         </div>
         <div className="rounded-2xl border border-[#1ab89a]/30 bg-[#f0faf7] p-5">
-          <p className="text-xs text-[#8aada9] mb-1">Meta de peso</p>
+          <p className="text-xs text-[#8aada9] mb-1">{t.weightGoal}</p>
           <p className="text-xl font-bold text-[#1ab89a]">65 <span className="text-sm font-normal text-[#5a7a76]">kg</span></p>
         </div>
         <div className="rounded-2xl border border-[#e8f0ef] bg-white shadow-[0_1px_2px_rgba(14,28,26,0.04)] p-5">
-          <p className="text-xs text-[#8aada9] mb-1">Próxima cita</p>
+          <p className="text-xs text-[#8aada9] mb-1">{t.nextAppt}</p>
           <p className="text-[15px] font-semibold text-[#0e1c1a] leading-tight">19 sep · 10:00 AM</p>
         </div>
       </div>
 
       <SectionCard
-        title="Plan establecido"
-        action={<button className="text-[12px] text-[#5a7a76] border border-[#e8f0ef] px-3 py-1.5 rounded-full hover:border-[#1ab89a] hover:text-[#1ab89a] transition-colors">Modificar plan</button>}
+        title={t.establishedPlan}
+        action={<button className="text-[12px] text-[#5a7a76] border border-[#e8f0ef] px-3 py-1.5 rounded-full hover:border-[#1ab89a] hover:text-[#1ab89a] transition-colors">{t.modifyPlan}</button>}
       >
-        <LabelValueRow label="Tipo de tratamiento" value="Farmacológico" />
+        <LabelValueRow label={t.treatmentType} value={t.pharmacological} />
         <LabelValueRow label="Medicamento" value="Semaglutida" />
         <LabelValueRow label="Dosis inicial" value="0.25 mg" />
-        <LabelValueRow label="Fecha de inicio" value="13 ago 2026" />
+        <LabelValueRow label={t.startDate} value="13 ago 2026" />
         <LabelValueRow label="Plazo estimado" value="6 meses" />
       </SectionCard>
 
-      <SectionCard title="Dosis en el tiempo">
+      <SectionCard title={t.doseOverTime}>
         <AxisChart data={DOSE_DATA} suffix=" mg" decimals={2} color="#6b7ff5" />
       </SectionCard>
     </div>
@@ -836,16 +853,14 @@ const BODY_FIELDS = [
   ["cadera", "Cadera", "hip", "right", 153, 20, 45, 182],
 ] as const;
 
-function conditionToLevel(condition: string) {
-  if (condition === "Normal") return "normal";
-  if (condition === "Sobrepeso") return "sobrepeso";
-  if (condition === "Obesidad I") return "obesidad1";
-  if (condition === "Obesidad II") return "obesidad2";
-  return "obesidad3";
+function conditionToLevel(cond: string) {
+  if (cond === "normal") return "normal";
+  if (cond === "overweight") return "sobrepeso";
+  return "obesidad1";
 }
 
-function BodyDiagram({ gender, condition, measurements }: { gender: string; condition: string; measurements: Record<string, { current: number; delta: number }> }) {
-  const key = `${gender === "Masculino" ? "male" : "female"}_${conditionToLevel(condition)}`;
+function BodyDiagram({ sex, cond, measurements }: { sex: string; cond: string; measurements: Record<string, { current: number; delta: number }> }) {
+  const key = `${sex === "M" ? "male" : "female"}_${conditionToLevel(cond)}`;
   const art = BODY_ART[key];
   if (!art) return null;
   const [width, ...xs] = art;
@@ -893,7 +908,8 @@ function BodyDiagram({ gender, condition, measurements }: { gender: string; cond
   );
 }
 
-function NutricionTab({ patient }: { patient: typeof PATIENTS[0] }) {
+function NutricionTab({ patient }: { patient: Patient }) {
+  const t = useT();
   const [subTab, setSubTab] = useState<"nueva" | "panel">("nueva");
   const zones = [
     { label: "Cuello", color: "#7b6fff", data: [{ date: "13 ago", value: 45 }, { date: "29 ago", value: 43 }, { date: "5 sep", value: 42 }] },
@@ -905,8 +921,8 @@ function NutricionTab({ patient }: { patient: typeof PATIENTS[0] }) {
 
   return (
     <div className="space-y-4">
-      <SectionCard title="Circunferencias">
-        <p className="text-[11px] font-semibold text-[#8aada9] uppercase tracking-wide mb-3">Nueva toma de medidas</p>
+      <SectionCard title={t.circumferences}>
+        <p className="text-[11px] font-semibold text-[#8aada9] uppercase tracking-wide mb-3">{t.newMeasures}</p>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 mb-4">
           {zones.map((z) => (
             <div key={z.label} className="rounded-lg border border-[#e8f0ef] bg-[#f7f8f9] px-3 py-2">
@@ -918,7 +934,7 @@ function NutricionTab({ patient }: { patient: typeof PATIENTS[0] }) {
             </div>
           ))}
         </div>
-        <button className="text-[13px] font-semibold text-white bg-[#1ab89a] px-4 py-2 rounded-full hover:bg-[#13a389] transition-colors">+ Registrar medidas</button>
+        <button className="text-[13px] font-semibold text-white bg-[#1ab89a] px-4 py-2 rounded-full hover:bg-[#13a389] transition-colors">{t.registerMeasures}</button>
       </SectionCard>
 
       <SectionCard title="Historial — 3 tomas">
@@ -937,7 +953,7 @@ function NutricionTab({ patient }: { patient: typeof PATIENTS[0] }) {
       </SectionCard>
 
       <div className="flex gap-1 p-1 bg-[#f0faf7] rounded-xl w-fit border border-[#e8f0ef]">
-        {([["nueva", "Panel de medidas"], ["panel", "Diagrama corporal"]] as const).map(([key, label]) => (
+        {([["nueva", t.measuresPanel], ["panel", t.bodyDiagram]] as const).map(([key, label]) => (
           <button
             key={key}
             onClick={() => setSubTab(key)}
@@ -964,8 +980,8 @@ function NutricionTab({ patient }: { patient: typeof PATIENTS[0] }) {
       {subTab === "panel" && (
         <SectionCard title="Diagrama corporal">
           <BodyDiagram
-            gender={patient.gender}
-            condition={patient.condition}
+            sex={patient.sex}
+            cond={patient.cond}
             measurements={Object.fromEntries(
               zones.map((z) => {
                 const current = z.data[z.data.length - 1].value;
@@ -984,13 +1000,14 @@ function NutricionTab({ patient }: { patient: typeof PATIENTS[0] }) {
 }
 
 function ActFisicaTab() {
+  const t = useT();
   return (
     <div className="space-y-4">
-      <SectionCard title="Próxima sesión de acondicionamiento">
-        <p className="text-[11px] font-semibold text-[#8aada9] uppercase tracking-wide mb-2">Próxima cita (para recordatorio)</p>
+      <SectionCard title={t.nextSession}>
+        <p className="text-[11px] font-semibold text-[#8aada9] uppercase tracking-wide mb-2">{t.nextApptReminder}</p>
         <div className="flex flex-wrap gap-2 mb-3">
           <button className="text-[12px] font-semibold px-3 py-1.5 rounded-full bg-[#1ab89a] text-white">En N...</button>
-          <button className="text-[12px] font-medium px-3 py-1.5 rounded-full border border-[#e8f0ef] text-[#5a7a76]">Fecha exacta</button>
+          <button className="text-[12px] font-medium px-3 py-1.5 rounded-full border border-[#e8f0ef] text-[#5a7a76]">{t.exactDate}</button>
         </div>
         <div className="flex flex-wrap gap-2">
           {["1 semana", "2 semanas", "1 mes", "Otro"].map((o) => (
@@ -999,20 +1016,20 @@ function ActFisicaTab() {
         </div>
       </SectionCard>
 
-      <SectionCard title="Hábitos">
-        <LabelValueRow label="Tabaquismo" value={<span><Pill tone="amber">Activo/a</Pill> <span className="ml-2 text-[#5a7a76] font-normal text-xs">10 cig/semana (fines de semana)</span></span>} />
-        <LabelValueRow label="Vapeo / cigarro electrónico" value={<span><Pill tone="amber">Activo/a</Pill> <span className="ml-2 text-[#5a7a76] font-normal text-xs">diario</span></span>} />
-        <LabelValueRow label="Alcohol" value={<span><Pill>Ocasional</Pill> <span className="ml-2 text-[#5a7a76] font-normal text-xs">1-2 tecates o tequila / semana</span></span>} />
-        <LabelValueRow label="Actividad física" value={<span><Pill tone="teal">Muy activo/a</Pill> <span className="ml-2 text-[#5a7a76] font-normal text-xs">fuerza 5x/sem + cardio 20-30 min</span></span>} />
-        <LabelValueRow label="Horas de sueño" value="6 h" />
+      <SectionCard title={t.habits}>
+        <LabelValueRow label={t.smoking} value={<span><Pill tone="amber">{t.active}</Pill> <span className="ml-2 text-[#5a7a76] font-normal text-xs">{t.smokingDetail}</span></span>} />
+        <LabelValueRow label={t.vaping} value={<span><Pill tone="amber">Activo/a</Pill> <span className="ml-2 text-[#5a7a76] font-normal text-xs">diario</span></span>} />
+        <LabelValueRow label={t.alcohol} value={<span><Pill>Ocasional</Pill> <span className="ml-2 text-[#5a7a76] font-normal text-xs">1-2 tecates o tequila / semana</span></span>} />
+        <LabelValueRow label={t.physicalActivity} value={<span><Pill tone="teal">Muy activo/a</Pill> <span className="ml-2 text-[#5a7a76] font-normal text-xs">fuerza 5x/sem + cardio 20-30 min</span></span>} />
+        <LabelValueRow label={t.sleepHours} value="6 h" />
       </SectionCard>
 
-      <SectionCard title="Tamizaje de sarcopenia (SARC-F)" action={<Pill tone="teal">SARC-F: 0/10 · Bajo riesgo</Pill>}>
+      <SectionCard title={t.sarcopeniaScreen} action={<Pill tone="teal">SARC-F: 0/10 · Bajo riesgo</Pill>}>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6">
-          <LabelValueRow label="Fuerza (cargar 4.5 kg)" value="Ninguna · 0" />
-          <LabelValueRow label="Caminar (cruzar cuarto)" value="Ninguna · 0" />
-          <LabelValueRow label="Levantarse silla/cama" value="Ninguna · 0" />
-          <LabelValueRow label="Subir 10 escalones" value="Ninguna · 0" />
+          <LabelValueRow label={t.sarcStrength} value="Ninguna · 0" />
+          <LabelValueRow label={t.sarcWalk} value="Ninguna · 0" />
+          <LabelValueRow label={t.sarcChair} value="Ninguna · 0" />
+          <LabelValueRow label={t.sarcStairs} value="Ninguna · 0" />
         </div>
       </SectionCard>
     </div>
@@ -1020,36 +1037,32 @@ function ActFisicaTab() {
 }
 
 function SeguimientoTab() {
+  const t = useT();
   const visits = [
-    { date: "22 sep 2026", type: "Acondicionamiento físico", note: "Paciente referida para plan de entrenamiento, inicia tx con GLP-1 (Wegovy). Refiere ir al gimnasio 5/7, rutina de fuerza 80 min y cardio ocasional 20-30 minutos." },
-    { date: "5 sep 2026", type: "Seguimiento", note: "Buena tolerancia al tratamiento. Sin efectos adversos reportados." },
-    { date: "13 ago 2026", type: "Seguimiento", note: "Consulta inicial. Se establece plan de tratamiento." },
+    { date: "22 sep 2026", typeKey: "visitConditioning" as const, tone: "blue" as const, note: t.visitNote1 },
+    { date: "5 sep 2026", typeKey: "visitFollowUp" as const, tone: "teal" as const, note: t.visitNote2 },
+    { date: "13 ago 2026", typeKey: "visitFollowUp" as const, tone: "teal" as const, note: t.visitNote3 },
   ];
-  const typeColor: Record<string, "teal" | "amber" | "blue"> = {
-    "Seguimiento": "teal",
-    "Revisión nutricional": "amber",
-    "Acondicionamiento físico": "blue",
-  };
 
   return (
     <div className="space-y-4">
       <div className="rounded-2xl border border-[#e8f0ef] bg-white shadow-[0_1px_2px_rgba(14,28,26,0.04)] p-5">
         <p className="text-2xl font-bold text-[#0e1c1a]">79.5 <span className="text-sm font-normal text-[#8aada9]">kg</span></p>
-        <p className="text-xs text-[#8aada9]">Peso actual</p>
+        <p className="text-xs text-[#8aada9]">{t.currentWeight}</p>
       </div>
 
-      <SectionCard title="Nueva consulta">
+      <SectionCard title={t.newConsult}>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
           <div>
             <p className="text-[10.5px] font-semibold text-[#8aada9] uppercase tracking-wide mb-1">Fecha</p>
             <div className="rounded-lg border border-[#e8f0ef] bg-[#f7f8f9] px-3 py-2 text-sm text-[#0e1c1a]">Hoy · 22 sep 2026</div>
           </div>
           <div>
-            <p className="text-[10.5px] font-semibold text-[#8aada9] uppercase tracking-wide mb-1">Tipo de consulta</p>
+            <p className="text-[10.5px] font-semibold text-[#8aada9] uppercase tracking-wide mb-1">{t.consultType}</p>
             <div className="rounded-lg border border-[#e8f0ef] bg-[#f7f8f9] px-3 py-2 text-sm text-[#0e1c1a]">Seguimiento</div>
           </div>
           <div>
-            <p className="text-[10.5px] font-semibold text-[#8aada9] uppercase tracking-wide mb-1">Peso (kg)</p>
+            <p className="text-[10.5px] font-semibold text-[#8aada9] uppercase tracking-wide mb-1">{t.weightKg}</p>
             <div className="rounded-lg border border-[#e8f0ef] bg-[#f7f8f9] px-3 py-2 text-sm text-[#0e1c1a]">79.5</div>
           </div>
           <div>
@@ -1060,10 +1073,10 @@ function SeguimientoTab() {
         <p className="text-xs text-[#5a7a76] mb-4">
           Tratamiento: <b className="text-[#0e1c1a]">Semaglutida</b> · dosis actual <b className="text-[#0e1c1a]">0.5 mg</b> · inicio 13 ago 2026
         </p>
-        <p className="text-[10.5px] font-semibold text-[#8aada9] uppercase tracking-wide mb-1">Nota clínica (evolución, síntomas, efectos secundarios)</p>
-        <div className="rounded-lg border border-[#e8f0ef] bg-[#f7f8f9] px-3 py-2 text-sm text-[#8aada9] mb-4 min-h-[60px]">Evolución, síntomas, efectos secundarios, indicaciones...</div>
+        <p className="text-[10.5px] font-semibold text-[#8aada9] uppercase tracking-wide mb-1">{t.clinicalNote}</p>
+        <div className="rounded-lg border border-[#e8f0ef] bg-[#f7f8f9] px-3 py-2 text-sm text-[#8aada9] mb-4 min-h-[60px]">{t.clinicalNotePlaceholder}</div>
         <div className="flex justify-end">
-          <button className="text-[13px] font-semibold text-white bg-[#1ab89a] px-4 py-2 rounded-full hover:bg-[#13a389] transition-colors">+ Registrar consulta</button>
+          <button className="text-[13px] font-semibold text-white bg-[#1ab89a] px-4 py-2 rounded-full hover:bg-[#13a389] transition-colors">{t.registerConsult}</button>
         </div>
       </SectionCard>
 
@@ -1074,7 +1087,7 @@ function SeguimientoTab() {
               <div className="flex items-center gap-2 mb-1.5">
                 <span className="w-2 h-2 rounded-full bg-[#1ab89a]" />
                 <span className="text-sm font-medium text-[#0e1c1a]" style={{ fontFamily: "'DM Mono', monospace" }}>{v.date}</span>
-                <Pill tone={typeColor[v.type] ?? "gray"}>{v.type}</Pill>
+                <Pill tone={v.tone}>{t[v.typeKey]}</Pill>
               </div>
               <p className="text-sm text-[#5a7a76] pl-4">{v.note}</p>
             </div>
@@ -1088,14 +1101,16 @@ function SeguimientoTab() {
 // ── TOP-LEVEL VIEWS (Dashboard / Calendario / Estudios / WhatsApp) ─────────
 
 const CAL_DAYS = ["D", "L", "M", "M", "J", "V", "S"];
+// patient index into t.patientNames, visit-type key into the dictionary
 const CAL_APPOINTMENTS = [
-  { time: "09:00", name: "Debany Montserrat Luevano Contreras", type: "Seguimiento" },
-  { time: "10:30", name: "Mitzy Lilian Gervacci Zazueta", type: "Consulta inicial" },
-  { time: "12:00", name: "Sergio Javier Bustamante García", type: "Revisión nutricional" },
-  { time: "17:00", name: "Valeria Guadalupe Leos Palomo", type: "Acondicionamiento físico" },
+  { time: "09:00", p: 0, typeKey: "visitFollowUp" as const },
+  { time: "10:30", p: 1, typeKey: "apptInitial" as const },
+  { time: "12:00", p: 4, typeKey: "visitNutrition" as const },
+  { time: "17:00", p: 6, typeKey: "visitConditioning" as const },
 ];
 
 function CalendarView() {
+  const t = useT();
   const today = 12;
   const busyDays = [3, 5, 12, 12, 18, 22, 27];
   const daysInMonth = 30;
@@ -1107,7 +1122,7 @@ function CalendarView() {
         <button className="w-8 h-8 rounded-lg border border-[#e8f0ef] flex items-center justify-center text-[#5a7a76] hover:border-[#1ab89a] shrink-0">‹</button>
         <button className="w-8 h-8 rounded-lg border border-[#e8f0ef] flex items-center justify-center text-[#5a7a76] hover:border-[#1ab89a] shrink-0">›</button>
         <p className="text-base sm:text-lg font-bold text-[#0e1c1a] truncate">Septiembre 2026</p>
-        <button className="text-xs sm:text-sm text-[#1ab89a] border border-[#1ab89a]/30 px-2.5 sm:px-3 py-1 rounded-full font-medium shrink-0">Hoy</button>
+        <button className="text-xs sm:text-sm text-[#1ab89a] border border-[#1ab89a]/30 px-2.5 sm:px-3 py-1 rounded-full font-medium shrink-0">{t.calToday}</button>
       </div>
 
       <div className="flex flex-col lg:flex-row flex-1 min-h-0 overflow-y-auto lg:overflow-hidden">
@@ -1149,8 +1164,8 @@ function CalendarView() {
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-xs font-semibold text-[#1ab89a]" style={{ fontFamily: "'DM Mono', monospace" }}>{a.time}</span>
                 </div>
-                <p className="text-[13px] font-medium text-[#0e1c1a] leading-tight">{a.name}</p>
-                <p className="text-[11px] text-[#8aada9] mt-0.5">{a.type}</p>
+                <p className="text-[13px] font-medium text-[#0e1c1a] leading-tight">{t.patientNames[a.p]}</p>
+                <p className="text-[11px] text-[#8aada9] mt-0.5">{t[a.typeKey]}</p>
               </div>
             ))}
           </div>
@@ -1161,16 +1176,17 @@ function CalendarView() {
 }
 
 const RECENT_UPLOADS = [
-  { name: "Debany Montserrat Luevano Contreras", file: "Quimica_Sanguinea_sep2026.pdf", status: "Procesado", date: "5 sep 2026" },
-  { name: "Mitzy Lilian Gervacci Zazueta", file: "InBody_ticket_ago2026.jpg", status: "Procesado", date: "29 ago 2026" },
-  { name: "Eduar Yossimar Martínez Flores", file: "Perfil_Lipidico.pdf", status: "En revisión", date: "3 sep 2026" },
+  { p: 0, file: "Quimica_Sanguinea_sep2026.pdf", done: true, date: "5 sep 2026" },
+  { p: 1, file: "InBody_ticket_ago2026.jpg", done: true, date: "29 ago 2026" },
+  { p: 3, file: "Perfil_Lipidico.pdf", done: false, date: "3 sep 2026" },
 ];
 
 function EstudiosView() {
+  const t = useT();
   return (
     <div className="flex-1 p-4 sm:p-8 overflow-y-auto">
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-xl sm:text-2xl font-bold text-[#0e1c1a] mb-2">Subir Estudios de Laboratorio</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-[#0e1c1a] mb-2">{t.uploadTitle}</h1>
         <p className="text-sm text-[#5a7a76] mb-6 sm:mb-8">
           Sube el PDF del laboratorio o la foto del ticket de báscula InBody para extraer automáticamente los
           valores del expediente del paciente.
@@ -1178,10 +1194,10 @@ function EstudiosView() {
 
         <div className="rounded-2xl border border-[#e8f0ef] bg-[#f8fefe] p-4 mb-6 flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-[11px] font-semibold text-[#8aada9] uppercase tracking-wide mb-1">Paciente activo</p>
+            <p className="text-[11px] font-semibold text-[#8aada9] uppercase tracking-wide mb-1">{t.activePatient}</p>
             <p className="text-sm font-medium text-[#0e1c1a] truncate">Debany Montserrat Luevano Contreras</p>
           </div>
-          <button className="text-xs text-[#1ab89a] font-medium shrink-0">Cambiar</button>
+          <button className="text-xs text-[#1ab89a] font-medium shrink-0">{t.change}</button>
         </div>
 
         <div className="rounded-2xl border-2 border-dashed border-[#d0e8e4] bg-white p-6 sm:p-12 text-center mb-10">
@@ -1190,21 +1206,21 @@ function EstudiosView() {
               <path d="M10 13V4m0 0L6 8m4-4l4 4M4 16h12" stroke="#1ab89a" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
-          <p className="text-sm font-medium text-[#0e1c1a] mb-1">Arrastra un PDF o imagen aquí</p>
-          <p className="text-xs text-[#8aada9]">o haz clic para seleccionar un archivo</p>
+          <p className="text-sm font-medium text-[#0e1c1a] mb-1">{t.dropHere}</p>
+          <p className="text-xs text-[#8aada9]">{t.orClick}</p>
         </div>
 
-        <p className="text-xs font-semibold text-[#8aada9] uppercase tracking-wide mb-3">Subidas recientes</p>
+        <p className="text-xs font-semibold text-[#8aada9] uppercase tracking-wide mb-3">{t.recentUploads}</p>
         <div className="space-y-2">
           {RECENT_UPLOADS.map((u) => (
             <div key={u.file} className="rounded-2xl border border-[#e8f0ef] bg-white shadow-[0_1px_2px_rgba(14,28,26,0.04)] p-4 flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-[13px] font-medium text-[#0e1c1a] truncate">{u.name}</p>
+                <p className="text-[13px] font-medium text-[#0e1c1a] truncate">{t.patientNames[u.p]}</p>
                 <p className="text-[11px] text-[#8aada9] truncate">{u.file}</p>
               </div>
               <div className="text-right shrink-0">
-                <span className={`text-[11px] font-medium px-2.5 py-1 rounded-full ${u.status === "Procesado" ? "bg-[#f0faf7] text-[#1ab89a]" : "bg-[#fff8ed] text-[#e8960c]"}`}>
-                  {u.status}
+                <span className={`text-[11px] font-medium px-2.5 py-1 rounded-full ${u.done ? "bg-[#f0faf7] text-[#1ab89a]" : "bg-[#fff8ed] text-[#e8960c]"}`}>
+                  {u.done ? t.processed : t.inReview}
                 </span>
                 <p className="text-[10px] text-[#c8ddd9] mt-1" style={{ fontFamily: "'DM Mono', monospace" }}>{u.date}</p>
               </div>
@@ -1217,6 +1233,7 @@ function EstudiosView() {
 }
 
 function WaPanel({ title, iconPath, count, children, disabled }: { title: string; iconPath: string; count: number; children?: ReactNode; disabled?: boolean }) {
+  const t = useT();
   return (
     <div className={`rounded-2xl border border-[#e8f0ef] bg-white shadow-[0_1px_2px_rgba(14,28,26,0.04)] p-4 ${disabled ? "opacity-50" : ""}`}>
       <div className="flex items-center gap-2.5 mb-3">
@@ -1224,16 +1241,17 @@ function WaPanel({ title, iconPath, count, children, disabled }: { title: string
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d={iconPath} stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
         </span>
         <span className="text-sm font-semibold text-[#0e1c1a] flex-1">{title}</span>
-        <span className="text-[11px] font-medium text-[#8aada9]">{disabled ? "Desactivado" : count}</span>
+        <span className="text-[11px] font-medium text-[#8aada9]">{disabled ? t.waDisabled : count}</span>
       </div>
       <div className="space-y-2">
-        {disabled ? <p className="text-xs text-[#c8ddd9]">Disponible próximamente para tu clínica.</p> : children}
+        {disabled ? <p className="text-xs text-[#c8ddd9]">{t.waComingSoon}</p> : children}
       </div>
     </div>
   );
 }
 
 function WhatsAppView() {
+  const t = useT();
   const waRow = (name: string, sub: string, sent: boolean) => (
     <div key={name} className="flex items-center justify-between gap-2 py-2 border-b border-[#f0f8f6] last:border-0">
       <div className="min-w-0">
@@ -1241,7 +1259,7 @@ function WhatsAppView() {
         <p className="text-[11px] text-[#8aada9] truncate">{sub}</p>
       </div>
       <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full shrink-0 ${sent ? "bg-[#f0faf7] text-[#1ab89a]" : "bg-[#fff8ed] text-[#e8960c]"}`}>
-        {sent ? "Enviado" : "Pendiente"}
+        {sent ? t.waSent : t.waPending}
       </span>
     </div>
   );
@@ -1255,18 +1273,18 @@ function WhatsAppView() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <WaPanel title="Confirmaciones de cita" iconPath="M3 8l3.5 3.5L13 5" count={3}>
-            {waRow("Ana Paola Ibarra", "Cita mañana, 5:00 PM", false)}
-            {waRow("Roberto Salinas", "Cita en 2 días, 9:00 AM", true)}
-            {waRow("Miguel Torres", "Cita en 7 días, 11:00 AM", false)}
+          <WaPanel title={t.waConfirmations} iconPath="M3 8l3.5 3.5L13 5" count={3}>
+            {waRow(t.waNames[0], t.waApptTomorrow, false)}
+            {waRow(t.waNames[1], t.waAppt2Days, true)}
+            {waRow(t.waNames[2], t.waAppt7Days, false)}
           </WaPanel>
-          <WaPanel title="Recordatorios (VIBs)" iconPath="M8 3v5l3 2" count={2}>
-            {waRow("Silvia Alejandra Martínez Villa", "Recordatorio de seguimiento", false)}
-            {waRow("Alan Alejandro Charles Salas", "Recordatorio de control", true)}
+          <WaPanel title={t.waReminders} iconPath="M8 3v5l3 2" count={2}>
+            {waRow(t.patientNames[2], t.waFollowUpReminder, false)}
+            {waRow(t.patientNames[8], t.waControlReminder, true)}
           </WaPanel>
-          <WaPanel title="Seguimiento de pagos" iconPath="M2 6h12M2 10h6" disabled count={0} />
-          <WaPanel title="Necesita atención" iconPath="M8 5v3.5M8 11h.01" count={1}>
-            {waRow("Diana Laura Arredondo Castillo", "No respondió tras 2 intentos", false)}
+          <WaPanel title={t.waPayments} iconPath="M2 6h12M2 10h6" disabled count={0} />
+          <WaPanel title={t.waNeedsAttention} iconPath="M8 5v3.5M8 11h.01" count={1}>
+            {waRow(t.patientNames[9], t.waNoAnswer, false)}
           </WaPanel>
         </div>
       </div>
@@ -1277,23 +1295,56 @@ function WhatsAppView() {
 // ── MAIN COMPONENT ─────────────────────────────────────────────────────────
 
 const NAV_VIEWS = [
-  ["dash", "Panel", "M3 13h4v7H3v-7zM10 8h4v12h-4V8zM17 3h4v17h-4V3z"],
-  ["cal", "Calendario", "M4 6h16M7 3v4M17 3v4M5 5h14a1 1 0 011 1v13a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z"],
-  ["est", "Subir Estudios", "M9 15V5m0 0L5 9m4-4l4 4M4 17h16"],
-  ["wa", "WhatsApp", "M4 20l1.3-3.9A7.9 7.9 0 1112 20a7.9 7.9 0 01-4.1-1.1L4 20z"],
+  ["dash", "navPanel", "M3 13h4v7H3v-7zM10 8h4v12h-4V8zM17 3h4v17h-4V3z"],
+  ["cal", "navCalendar", "M4 6h16M7 3v4M17 3v4M5 5h14a1 1 0 011 1v13a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z"],
+  ["est", "navUpload", "M9 15V5m0 0L5 9m4-4l4 4M4 17h16"],
+  ["wa", "navWhatsApp", "M4 20l1.3-3.9A7.9 7.9 0 1112 20a7.9 7.9 0 01-4.1-1.1L4 20z"],
 ] as const;
 
+const DEMO_LANG_KEY = "omega-demo-lang";
+
+// Outer shell owns the language so everything below can read it via useT().
+// The landing page links through as /omega/demo?lang=xx; after that the choice
+// persists so switching views doesn't reset it.
 export function OmegaDemo() {
+  const [params] = useSearchParams();
+  const [lang, setLang] = useState<DemoLang>("es");
+
+  useEffect(() => {
+    const fromUrl = params.get("lang");
+    if (isDemoLang(fromUrl)) { setLang(fromUrl); return; }
+    try {
+      const stored = window.localStorage.getItem(DEMO_LANG_KEY);
+      if (isDemoLang(stored)) setLang(stored);
+    } catch {
+      // localStorage unavailable, stay on the default
+    }
+  }, [params]);
+
+  function changeLang(next: DemoLang) {
+    setLang(next);
+    try { window.localStorage.setItem(DEMO_LANG_KEY, next); } catch { /* ignore */ }
+  }
+
+  return (
+    <DemoTContext.Provider value={DEMO_T[lang]}>
+      <DemoUI lang={lang} onLangChange={changeLang} />
+    </DemoTContext.Provider>
+  );
+}
+
+function DemoUI({ lang, onLangChange }: { lang: DemoLang; onLangChange: (l: DemoLang) => void }) {
+  const t = useT();
   const navigate = useNavigate();
   const [activeView, setActiveView] = useState<"dash" | "cal" | "est" | "wa">("dash");
   const [navOpen, setNavOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState(1);
-  const [activeTab, setActiveTab] = useState("Resumen");
+  const [activeTab, setActiveTab] = useState(0);
   const [mobilePane, setMobilePane] = useState<"list" | "detail">("list");
 
   const filtered = PATIENTS.filter((p) =>
-    p.name.toLowerCase().includes(search.toLowerCase())
+    patientName(t, p).toLowerCase().includes(search.toLowerCase())
   );
   const patient = PATIENTS.find((p) => p.id === selectedId)!;
   const activeViewMeta = NAV_VIEWS.find((v) => v[0] === activeView)!;
@@ -1302,7 +1353,7 @@ export function OmegaDemo() {
     <div className="flex flex-col h-screen bg-[#f8fefe]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
       {/* DEMO DISCLAIMER */}
       <div className="shrink-0 bg-[#0e1c1a] text-white text-center py-1.5 text-[11px] tracking-wide px-4">
-        Demo interactivo: pacientes y datos ficticios, solo para fines ilustrativos · Prototipo de menor fidelidad visual, pensado para mostrar la funcionalidad, no el acabado final
+        {t.disclaimer}
       </div>
 
       {/* TOP NAV — logo + tabs left-aligned, single action right, matching the real app's layout.
@@ -1316,12 +1367,12 @@ export function OmegaDemo() {
           </div>
           <div className="text-left leading-tight hidden sm:block">
             <p className="font-semibold text-[14px] text-[#0e1c1a] leading-tight">Omega</p>
-            <p className="text-[11px] text-[#8aada9] leading-tight">Clínica Demo</p>
+            <p className="text-[11px] text-[#8aada9] leading-tight">{t.clinic}</p>
           </div>
         </button>
 
         <div className="hidden md:flex items-center gap-1">
-          {NAV_VIEWS.map(([key, label, path]) => (
+          {NAV_VIEWS.map(([key, labelKey, path]) => (
             <button
               key={key}
               onClick={() => setActiveView(key)}
@@ -1334,7 +1385,7 @@ export function OmegaDemo() {
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                 <path d={path} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-              {label}
+              {t[labelKey]}
             </button>
           ))}
         </div>
@@ -1347,23 +1398,38 @@ export function OmegaDemo() {
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
             <path d={activeViewMeta[2]} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          {activeViewMeta[1]}
+          {t[activeViewMeta[1]]}
           <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className={`transition-transform ${navOpen ? "rotate-180" : ""}`}>
             <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
 
+        <div className="ml-auto flex items-center border border-[#e8f0ef] rounded-full overflow-hidden text-[11px] font-semibold shrink-0 mr-2">
+          {(["es", "en", "pt"] as const).map((code) => (
+            <button
+              key={code}
+              onClick={() => onLangChange(code)}
+              aria-pressed={lang === code}
+              className={`px-1.5 sm:px-2 py-1.5 transition-colors ${
+                lang === code ? "bg-[#0e1c1a] text-white" : "text-[#8aada9] hover:text-[#0e1c1a]"
+              }`}
+            >
+              {code.toUpperCase()}
+            </button>
+          ))}
+        </div>
+
         <button
           onClick={() => navigate("/omega")}
-          className="ml-auto text-[12px] sm:text-[12.5px] font-medium text-[#5a7a76] border border-[#e8f0ef] px-2.5 sm:px-3.5 py-1.5 rounded-lg hover:border-[#1ab89a] hover:text-[#1ab89a] transition-colors shrink-0"
+          className="text-[12px] sm:text-[12.5px] font-medium text-[#5a7a76] border border-[#e8f0ef] px-2.5 sm:px-3.5 py-1.5 rounded-lg hover:border-[#1ab89a] hover:text-[#1ab89a] transition-colors shrink-0"
         >
-          <span className="sm:hidden">Salir</span>
-          <span className="hidden sm:inline">Salir del demo</span>
+          <span className="sm:hidden">{t.exitShort}</span>
+          <span className="hidden sm:inline">{t.exit}</span>
         </button>
 
         {navOpen && (
           <div className="md:hidden absolute top-full left-0 right-0 bg-white border-b border-[#e8f0ef] shadow-[0_4px_16px_rgba(14,28,26,0.08)] p-2 z-20">
-            {NAV_VIEWS.map(([key, label, path]) => (
+            {NAV_VIEWS.map(([key, labelKey, path]) => (
               <button
                 key={key}
                 onClick={() => { setActiveView(key); setNavOpen(false); }}
@@ -1374,7 +1440,7 @@ export function OmegaDemo() {
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                   <path d={path} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
-                {label}
+                {t[labelKey]}
               </button>
             ))}
           </div>
@@ -1397,7 +1463,7 @@ export function OmegaDemo() {
               </svg>
               <input
                 type="text"
-                placeholder="Buscar paciente..."
+                placeholder={t.searchPlaceholder}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full bg-[#f7f8f9] border border-[#e8f0ef] rounded-[10px] pl-8 pr-3 py-2 text-[13px] text-[#0e1c1a] placeholder:text-[#8aada9] focus:outline-none focus:border-[#1ab89a] focus:bg-white transition-colors"
@@ -1405,7 +1471,7 @@ export function OmegaDemo() {
             </div>
           </div>
           <div className="flex items-center justify-between px-3.5 pt-2 pb-1">
-            <span className="text-[10.5px] text-[#8aada9] font-semibold uppercase tracking-wider">Pacientes</span>
+            <span className="text-[10.5px] text-[#8aada9] font-semibold uppercase tracking-wider">{t.patients}</span>
             <button className="text-[11.5px] font-semibold text-white bg-[#1ab89a] px-3 py-[5px] rounded-full hover:bg-[#13a389] transition-colors">
               + Nuevo
             </button>
@@ -1414,22 +1480,22 @@ export function OmegaDemo() {
             {filtered.map((p) => (
               <button
                 key={p.id}
-                onClick={() => { setSelectedId(p.id); setActiveTab("Resumen"); setMobilePane("detail"); }}
+                onClick={() => { setSelectedId(p.id); setActiveTab(0); setMobilePane("detail"); }}
                 className={`w-full flex items-center gap-2.5 pl-[11px] pr-3.5 py-2.5 border-l-[3px] text-left transition-colors ${
                   selectedId === p.id ? "bg-[#f0faf7] border-[#1ab89a]" : "border-transparent hover:bg-[#f7f8f9]"
                 }`}
               >
                 <div
                   className="w-9 h-9 rounded-full flex items-center justify-center text-white text-[13px] font-semibold shrink-0"
-                  style={{ background: avatarGradient(p.gender) }}
+                  style={{ background: avatarGradient(p.sex) }}
                 >
-                  {p.initials}
+                  {patientInitials(t, p)}
                 </div>
                 <div className="min-w-0">
                   <p className="text-[13px] font-semibold text-[#0e1c1a] truncate leading-tight">
-                    {p.name}
+                    {patientName(t, p)}
                   </p>
-                  <p className="text-[11px] text-[#5a7a76] mt-px">{p.age} años · {p.gender}</p>
+                  <p className="text-[11px] text-[#5a7a76] mt-px">{p.age} {t.years} · {genderLabel(t, p)}</p>
                 </div>
               </button>
             ))}
@@ -1445,26 +1511,26 @@ export function OmegaDemo() {
               className="md:hidden flex items-center gap-1.5 text-sm text-[#5a7a76] hover:text-[#1ab89a] py-2 -mt-1 mb-1 transition-colors"
             >
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              Pacientes
+              {t.backToPatients}
             </button>
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
               <div className="flex items-center gap-4">
                 <div
                   className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-base shrink-0"
-                  style={{ background: avatarGradient(patient.gender) }}
+                  style={{ background: avatarGradient(patient.sex) }}
                 >
-                  {patient.initials}
+                  {patientInitials(t, patient)}
                 </div>
                 <div>
-                  <h1 className="text-lg font-bold text-[#0e1c1a] mb-1.5">{patient.name}</h1>
+                  <h1 className="text-lg font-bold text-[#0e1c1a] mb-1.5">{patientName(t, patient)}</h1>
                   <div className="flex flex-wrap items-center gap-1.5">
                     <Pill tone="blue" icon={<svg width="10" height="10" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5.5" r="3" stroke="currentColor" strokeWidth="1.4"/><path d="M2.5 14c0-3 2.5-5 5.5-5s5.5 2 5.5 5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>}>
-                      {patient.doctor}
+                      {t.doctors[patient.doctorIdx]}
                     </Pill>
-                    <Pill>{patient.medication}</Pill>
-                    <Pill tone="teal">{patient.gender}</Pill>
-                    <Pill tone={conditionTone(patient.condition)}>{patient.age} años</Pill>
-                    <Pill tone={conditionTone(patient.condition)}>{patient.bmi} IMC · {patient.condition}</Pill>
+                    <Pill>{medLabel(t, patient)}</Pill>
+                    <Pill tone="teal">{genderLabel(t, patient)}</Pill>
+                    <Pill tone={conditionTone(patient.cond)}>{patient.age} {t.years}</Pill>
+                    <Pill tone={conditionTone(patient.cond)}>{patient.bmi} {t.bmi} · {condLabel(t, patient.cond)}</Pill>
                   </div>
                 </div>
               </div>
@@ -1478,12 +1544,12 @@ export function OmegaDemo() {
 
             {/* Tabs */}
             <div className="flex gap-1 mt-5 -mb-px overflow-x-auto">
-              {TABS.map((tab) => (
+              {t.tabs.map((tab, i) => (
                 <button
                   key={tab}
-                  onClick={() => setActiveTab(tab)}
+                  onClick={() => setActiveTab(i)}
                   className={`text-sm px-4 py-2 rounded-t-lg border-b-2 whitespace-nowrap transition-colors ${
-                    activeTab === tab
+                    activeTab === i
                       ? "border-[#1ab89a] text-[#1ab89a] font-semibold bg-[#f0faf7]"
                       : "border-transparent text-[#8aada9] hover:text-[#0e1c1a]"
                   }`}
@@ -1496,16 +1562,16 @@ export function OmegaDemo() {
 
           {/* Tab content */}
           <div className="px-4 sm:px-7 py-4 sm:py-6">
-            {activeTab === "Resumen" && <ResumenTab patient={patient} />}
-            {activeTab === "InBody" && <InBodyTab />}
-            {activeTab === "Estudios" && <EstudiosTab />}
-            {activeTab === "Signos Vitales" && <SignosTab />}
-            {activeTab === "Antecedentes" && <AntecedentesTab />}
-            {activeTab === "Nutrición" && <NutricionTab patient={patient} />}
-            {activeTab === "Riesgo" && <RiesgoTab />}
-            {activeTab === "Plan" && <PlanTab />}
-            {activeTab === "Act. Física" && <ActFisicaTab />}
-            {activeTab === "Seguimiento" && <SeguimientoTab />}
+            {activeTab === 0 && <ResumenTab patient={patient} />}
+            {activeTab === 3 && <InBodyTab />}
+            {activeTab === 4 && <EstudiosTab />}
+            {activeTab === 2 && <SignosTab />}
+            {activeTab === 1 && <AntecedentesTab />}
+            {activeTab === 7 && <NutricionTab patient={patient} />}
+            {activeTab === 5 && <RiesgoTab />}
+            {activeTab === 6 && <PlanTab />}
+            {activeTab === 8 && <ActFisicaTab />}
+            {activeTab === 9 && <SeguimientoTab />}
           </div>
         </main>
       </div>
