@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { CalendlyButton } from '@/components/CalendlyButton'
 
-type Lang = 'es' | 'en'
+type Lang = 'es' | 'en' | 'pt'
 
 type TourTab = { id: string; label: string; title: string; desc: string; items: string[] }
 type Tier = { name: string; price: string; cadence: string; intro: string; features: string[]; highlight?: boolean; cta: string }
@@ -48,6 +48,7 @@ type Content = {
   whyGenericLabel: string
   whyOmegaLabel: string
   whyRows: WhyRow[]
+  whyMexicoFlag: string
   whyMexicoTitle: string
   whyMexicoBody: string
   stepsEyebrow: string
@@ -191,6 +192,7 @@ const CONTENT: Record<Lang, Content> = {
       { generic: 'Soporte por ticket, en otro país, en otro idioma.', omega: 'Fácil de contactarnos y pedirnos cambios cuando los necesites.' },
       { generic: 'Tú te encargas solo de la curva de aprendizaje.', omega: 'Sabemos que estás ocupado: te acompañamos hasta que tu equipo lo domine.' },
     ],
+    whyMexicoFlag: '🇲🇽',
     whyMexicoTitle: 'Hecho en México, para médicos mexicanos',
     whyMexicoBody: 'Creemos que mereces herramientas tan buenas como las de cualquier país, pensadas para cómo se trabaja aquí: en español, con soporte cercano y sin fricciones de facturación o pagos internacionales.',
     stepsEyebrow: 'Proceso simple',
@@ -374,6 +376,7 @@ const CONTENT: Record<Lang, Content> = {
       { generic: 'Ticket-based support, another country, another language.', omega: 'Easy to reach us and ask for changes whenever you need them.' },
       { generic: 'You handle the learning curve on your own.', omega: 'We know you’re busy: we stay with you until your team has it down.' },
     ],
+    whyMexicoFlag: '🇲🇽',
     whyMexicoTitle: 'Made in Mexico, for Mexican doctors',
     whyMexicoBody: 'We believe you deserve tools as good as anywhere else, built for how clinics actually work here: in Spanish, with close support, and without international billing or payment friction.',
     stepsEyebrow: 'Simple process',
@@ -434,6 +437,190 @@ const CONTENT: Record<Lang, Content> = {
       'Phone (optional): ',
       '',
       'Thank you! We look forward to hearing from you.',
+    ].join('\r\n'),
+  },
+  pt: {
+    navProduct: 'Produto',
+    navWhy: 'Por que Omega',
+    navPricing: 'Preços',
+    navDemo: 'Testar demo',
+    heroBadge: 'Software para clínicas de bariátrica e metabolismo',
+    heroTitle1: 'Menos digitação manual.',
+    heroTitle2: 'Mais tempo com seus pacientes.',
+    heroBody:
+      'O Omega Gestor de Clínica Inteligente lê seus exames laboratoriais e balanças InBody automaticamente, monta o prontuário do paciente para você e confirma consultas pelo WhatsApp sem que ninguém precise ligar.',
+    heroCtaPrimary: 'Testar demo interativo',
+    heroCtaSecondary: 'Solicitar demo por e-mail',
+    heroCardTitle: 'Agenda de hoje',
+    heroCardDate: 'Terça-feira, 22 de setembro',
+    heroCardCount: '4 consultas',
+    heroCardApts: [
+      { time: '09:00', name: 'Ana Paula Ribeiro', type: 'Acompanhamento', confirmed: true },
+      { time: '10:30', name: 'Mariana Gonçalves', type: 'Primeira consulta', confirmed: true },
+      { time: '11:30', name: 'Roberto Salgado', type: 'Revisão nutricional', confirmed: false },
+      { time: '14:00', name: 'Miguel Tavares', type: 'Controle de tratamento', confirmed: true },
+    ],
+    heroStatusConfirmed: 'Confirmada',
+    heroStatusPending: 'Pendente',
+    heroBadgeTitle: 'Confirmadas pelo WhatsApp',
+    heroBadgeSub: 'sem que sua equipe ligue',
+    heroCardNote: 'Exemplo ilustrativo com dados fictícios.',
+    videoEyebrow: 'Veja o Omega em ação',
+    videoTitle: 'Um tour completo, em menos de 7 minutos.',
+    videoSub: 'Mostramos como funciona o prontuário, a leitura automática de exames e InBody, as calculadoras de risco clínico e a automação por WhatsApp, com o sistema rodando de verdade.',
+    videoPlayLabel: 'Assistir ao tour',
+    videoDuration: '6:33 min',
+    featuresEyebrow: 'O que o Omega faz',
+    featuresTitle: 'Tudo o que você faz à mão hoje, automatizado.',
+    featuresSub: 'Desenvolvido a partir do trabalho real com clínicas de bariátrica e metabolismo em Monterrey.',
+    features: [
+      { num: '01', title: 'Prontuário completo do paciente', desc: 'Histórico, antecedentes, sinais vitais e acompanhamento em um só lugar, sem pastas nem planilhas soltas.' },
+      { num: '02', title: 'Leitura automática de exames e InBody', desc: 'Envie o PDF ou o ticket da balança e o prontuário se atualiza sozinho, sem digitação manual.' },
+      { num: '03', title: 'Resumo do paciente com IA', desc: 'Um resumo claro da evolução do paciente antes de cada consulta, gerado automaticamente.' },
+      { num: '04', title: 'Agenda integrada', desc: 'Marque suas consultas e consulte-as no mesmo sistema onde você atende o paciente.' },
+      { num: '05', title: 'Automação por WhatsApp', desc: 'Confirmações e lembretes de consulta enviados sozinhos, sem que sua equipe precise ligar.' },
+      { num: '06', title: 'Reconhecimento de voz com IA', desc: 'Dite suas notas de consulta e deixe o sistema estruturá-las no prontuário.' },
+    ],
+    tourEyebrow: 'Conheça o Omega',
+    tourTitle: 'Cada área da sua clínica, coberta',
+    tourSub: 'Isto é o que já funciona no sistema: não é uma ideia, é uma demonstração da operação real.',
+    tour: [
+      {
+        id: 'pacientes', label: 'Pacientes',
+        title: 'Um prontuário que realmente se usa',
+        desc: 'Todo o histórico do paciente em um só lugar, pesquisável, sem pastas físicas nem planilhas espalhadas.',
+        items: [
+          'Prontuário completo: antecedentes, sinais vitais, exames, acompanhamento',
+          'Busca instantânea de pacientes',
+          'Suporte multi-médico com identificação por especialista',
+          'Formulário de cadastro personalizável por clínica',
+        ],
+      },
+      {
+        id: 'riesgo', label: 'Risco Clínico',
+        title: 'Calculadoras clínicas validadas, automáticas',
+        desc: 'O Omega calcula os índices de risco metabólico e cardiovascular mais usados em consulta, a partir dos dados que você já registrou.',
+        items: [
+          'Framingham, FINDRISC, HOMA-IR, TyG, VAI, FLI e NAFLD',
+          'Estadiamento EOSS (Edmonton Obesity Staging System) sugerido automaticamente',
+          'Avaliação de sarcopenia a partir do InBody',
+          'O médico sempre confirma ou ajusta antes de registrar no prontuário',
+        ],
+      },
+      {
+        id: 'plan', label: 'Plano de Tratamento',
+        title: 'O plano e a evolução, conectados',
+        desc: 'Metas de peso, tipo de tratamento e próxima consulta em uma só tela, não na cabeça do médico.',
+        items: [
+          'Acompanhamento da meta de peso vs. peso atual',
+          'Tratamento farmacológico (doses e datas de GLP-1), cirúrgico ou endoscópico',
+          'Próxima consulta vinculada automaticamente ao plano ativo',
+        ],
+      },
+      {
+        id: 'nutricion', label: 'Nutrição com IA',
+        title: 'Lê o recordatório de 24 horas por você',
+        desc: 'O paciente descreve como se alimenta e o Omega analisa automaticamente, como apoio, nunca no lugar do nutricionista.',
+        items: [
+          'Detecção automática de refeições e horários mencionados',
+          'Sinais de alerta e escolhas saudáveis identificados por palavras-chave',
+          'Questionário de perfil alimentar integrado ao prontuário',
+        ],
+      },
+      {
+        id: 'whatsapp', label: 'WhatsApp',
+        title: 'Confirmações e lembretes que se enviam sozinhos',
+        desc: 'Sua equipe para de ligar um por um: o Omega confirma, lembra e avisa quando algo precisa de atenção humana.',
+        items: [
+          'Confirmação automática de consultas pelo WhatsApp',
+          'Lembretes antes da consulta',
+          'Acompanhamento de pagamentos por chat',
+          'Painel com aviso de "precisa de atenção" quando a automação não basta',
+        ],
+      },
+      {
+        id: 'calendario', label: 'Agenda',
+        title: 'A agenda da clínica, não só a sua',
+        desc: 'Sincronizada com as ferramentas que sua equipe já usa, com uma visão clara de quem atende o quê.',
+        items: [
+          'Sincronização com o Google Agenda',
+          'Funções por especialista: médico, nutrição, condicionamento',
+          'Visualização em desktop e celular',
+        ],
+      },
+    ],
+    whyEyebrow: 'Por que Omega',
+    whyTitle: 'Não apenas especializado. Feito sob medida.',
+    whySub: 'As grandes plataformas entregam um software genérico e deixam você sozinho com a configuração. Nós fazemos diferente.',
+    whyGenericLabel: 'Software genérico grande',
+    whyOmegaLabel: 'Omega',
+    whyRows: [
+      { generic: 'Configure você mesmo, com manuais de centenas de páginas.', omega: 'Nós configuramos para você, sem custo.' },
+      { generic: 'Um produto igual para qualquer clínica.', omega: 'Adaptado à sua especialidade e ao seu jeito de trabalhar.' },
+      { generic: 'Suporte por ticket, em outro país, em outro idioma.', omega: 'Fácil de falar conosco e pedir mudanças quando precisar.' },
+      { generic: 'Você enfrenta a curva de aprendizado sozinho.', omega: 'Sabemos que você está ocupado: acompanhamos até sua equipe dominar.' },
+    ],
+    whyMexicoFlag: '🌎',
+    whyMexicoTitle: 'Feito na América Latina, perto de como você trabalha',
+    whyMexicoBody: 'Acreditamos que você merece ferramentas tão boas quanto as de qualquer país, pensadas para a realidade das clínicas da região: no seu idioma, com suporte próximo e sem a fricção de cobranças e pagamentos internacionais.',
+    stepsEyebrow: 'Processo simples',
+    stepsTitle: 'Assim você começa a usar',
+    steps: [
+      { step: '1', title: 'Você nos conta como trabalha', desc: 'Formulários, métricas, especialidade: configuramos o Omega ao seu jeito de trabalhar, sem custo de instalação.' },
+      { step: '2', title: 'Migramos suas informações', desc: 'Ajudamos você a trazer seus prontuários atuais para não começar do zero.' },
+      { step: '3', title: 'Sua equipe começa a usar', desc: 'Treinamento incluído para você e sua equipe, com dúvidas resolvidas enquanto vocês se acostumam.' },
+    ],
+    pricingEyebrow: 'Preços',
+    pricingTitle: 'Um plano para cada etapa da sua clínica',
+    pricingSub: 'Cada plano inclui tudo o do anterior. Mude de plano quando sua clínica precisar.',
+    setupBadgeBold: '$0 de custo de instalação',
+    setupBadgeRest: 'configuramos o app ao seu jeito de trabalhar',
+    tiers: [
+      {
+        name: 'Base', price: '$800', cadence: 'MXN / mês',
+        intro: 'O essencial para parar de usar papel e planilhas.',
+        features: ['Prontuário completo de pacientes', 'Detalhe clínico do paciente', 'Leitura de exames laboratoriais e InBody', 'Resumo do paciente com IA', 'Agenda integrada'],
+        cta: 'Solicitar informações',
+      },
+      {
+        name: 'Essentials', price: '$1,000', cadence: 'MXN / mês',
+        intro: 'Tudo do Base, mais:',
+        features: ['Formulário personalizado (mais ou menos campos conforme sua clínica)', 'Conexão com Google Agenda, Apple Calendar e outros', 'Métricas personalizadas: sinais vitais, acompanhamento, nutrição, outros especialistas'],
+        cta: 'Solicitar informações',
+      },
+      {
+        name: 'Automation', price: '$1,500', cadence: 'MXN / mês',
+        intro: 'Tudo do Essentials, mais:',
+        features: ['Confirmação de consultas pelo WhatsApp', 'Lembretes a pacientes pelo WhatsApp', 'Reconhecimento de voz com IA', 'Gestão de leads e agenda'],
+        highlight: true,
+        cta: 'Solicitar informações',
+      },
+      {
+        name: 'Custom', price: '$2,500+', cadence: 'MXN / mês',
+        intro: 'O plano que você escolher como base, mais:',
+        features: ['Ferramentas personalizadas sob medida', 'Taxa única de desenvolvimento (OTOF) conforme o escopo'],
+        cta: 'Falar conosco',
+      },
+    ],
+    ctaEyebrow: 'Pronto para ver mais?',
+    ctaTitle: 'Teste o demo ou nos conte sobre sua clínica.',
+    ctaBody: 'Sem compromisso. Mostramos como o Omega ficaria funcionando do jeito que sua clínica trabalha.',
+    ctaPrimary: 'Testar demo interativo',
+    ctaSecondary: 'Falar conosco',
+    footerCredit: 'Um produto desenvolvido pela Schema',
+    emailSubject: 'Solicitação de demo do Omega',
+    emailBody: [
+      'Olá, equipe Schema,',
+      '',
+      'Temos interesse em uma demonstração do Omega para conhecer melhor a plataforma e como ela pode nos ajudar a gerir nossa clínica.',
+      '',
+      'Gostaríamos de conhecer os recursos, os planos disponíveis e como começar. Vocês poderiam entrar em contato para agendar uma demonstração?',
+      '',
+      'Nome: ',
+      'Clínica: ',
+      'Telefone (opcional): ',
+      '',
+      'Obrigado! Ficamos no aguardo.',
     ].join('\r\n'),
   },
 }
@@ -547,21 +734,21 @@ export function OmegaLanding() {
               {t.navPricing}
             </a>
             <div className="flex items-center border border-[#e8f0ef] rounded-full overflow-hidden text-xs font-semibold shrink-0">
-              <button
-                onClick={() => setLang('es')}
-                className={`px-2 sm:px-2.5 py-1.5 transition-colors ${lang === 'es' ? 'bg-[#0e1c1a] text-white' : 'text-[#8aada9] hover:text-[#0e1c1a]'}`}
-              >
-                ES
-              </button>
-              <button
-                onClick={() => setLang('en')}
-                className={`px-2 sm:px-2.5 py-1.5 transition-colors ${lang === 'en' ? 'bg-[#0e1c1a] text-white' : 'text-[#8aada9] hover:text-[#0e1c1a]'}`}
-              >
-                EN
-              </button>
+              {(['es', 'en', 'pt'] as const).map((code) => (
+                <button
+                  key={code}
+                  onClick={() => setLang(code)}
+                  aria-pressed={lang === code}
+                  className={`px-1.5 sm:px-2.5 py-1.5 transition-colors ${
+                    lang === code ? 'bg-[#0e1c1a] text-white' : 'text-[#8aada9] hover:text-[#0e1c1a]'
+                  }`}
+                >
+                  {code.toUpperCase()}
+                </button>
+              ))}
             </div>
             <Link
-              to="/omega/demo"
+              to={`/omega/demo?lang=${lang}`}
               className="bg-[#0e1c1a] text-white text-[13px] sm:text-sm px-3.5 sm:px-5 py-2.5 rounded-full hover:bg-[#1ab89a] transition-colors font-medium whitespace-nowrap"
             >
               {/* Narrow phones can't fit the full label alongside the logo, language toggle and menu. */}
@@ -620,7 +807,7 @@ export function OmegaLanding() {
             <p className="text-[#5a7a76] text-lg leading-relaxed mb-10 max-w-md font-light">{t.heroBody}</p>
             <div className="flex flex-wrap gap-3">
               <Link
-                to="/omega/demo"
+                to={`/omega/demo?lang=${lang}`}
                 className="bg-[#1ab89a] text-white px-7 py-3.5 rounded-full font-semibold text-sm hover:bg-[#13a389] transition-colors"
               >
                 {t.heroCtaPrimary}
@@ -810,7 +997,7 @@ export function OmegaLanding() {
           </div>
 
           <div className="rounded-2xl bg-[#0e1c1a] p-6 sm:p-8 md:p-10 flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
-            <span className="text-4xl shrink-0">🇲🇽</span>
+            <span className="text-4xl shrink-0">{t.whyMexicoFlag}</span>
             <div>
               <h3 className="text-white text-lg font-bold mb-1.5">{t.whyMexicoTitle}</h3>
               <p className="text-[#8aada9] text-sm leading-relaxed">{t.whyMexicoBody}</p>
@@ -910,7 +1097,7 @@ export function OmegaLanding() {
             <p className="text-[#5a8a82] text-base mb-8 max-w-sm mx-auto font-light">{t.ctaBody}</p>
             <div className="flex flex-wrap gap-3 justify-center">
               <Link
-                to="/omega/demo"
+                to={`/omega/demo?lang=${lang}`}
                 className="bg-[#1ab89a] text-white px-8 py-3.5 rounded-full font-semibold text-sm hover:bg-[#13a389] transition-colors"
               >
                 {t.ctaPrimary}
